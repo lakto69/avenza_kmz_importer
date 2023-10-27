@@ -7,13 +7,13 @@ name=Avenza Maps's KML/KMZ File Importer
 qgisMinimumVersion=3.0
 description=This plugin import features from KML e KMZ files from Avenza Maps
 version=1.0
-author=Andrés de Medeiros Leite
+author=Andrés de M. Leite
 email=leite.m.andres@gmail.com
 
 about=This plugin is used to import features from KML and KMZ files exported by the App <a href="https://store.avenza.com/">Avenza Maps</a>, maintaining the original icons of the points created in that application and categorizing all features by the style of the original symbology. WARNING: It was developed to specifically import KML and KMZ files exported by Avenza. It probably won't work with other KML/KMZ files created by other applications!
 
-tracker=http://bugs-prcc-3
-repository=http://repositorio
+tracker=https://github.com/lakto69/avenza_kmz_importer/issues
+repository=https://github.com/lakto69/avenza_kmz_importer
 # End of mandatory metadata
 
 # Recommended items:
@@ -25,7 +25,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python, import, kmz, kml, point, polygon, line, avenza
 
-homepage=http://homepage
+homepage=https://github.com/lakto69/avenza_kmz_importer
 category=Plugins
 icon=icon.ico
 # experimental flag
