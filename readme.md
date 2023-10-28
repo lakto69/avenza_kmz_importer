@@ -1,7 +1,8 @@
 <html>
 <body>
 
-<h1><img src="icon.png" alt="logo" width="100"/>  AvenzaKMLImporter</h1>
+<h1 align="center"><img src="icon.png" alt="logo" width="100"/></h1>
+<h1 align="center">AvenzaKMLImporter</h1>
 
 <h3>What motivated me to create this plugin:</h3>
 
