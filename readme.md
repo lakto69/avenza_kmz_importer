@@ -1,7 +1,8 @@
 <html>
 <body>
 
-<h1><img src="icon.png" alt="logo" width="100"/>  AvenzaKMLImporter</h1>
+<h1 align="center"><img src="icon.png" alt="logo" width="100"/></h1>
+<h1 align="center">AvenzaKMLImporter</h1>
 
 <h3>What motivated me to create this plugin:</h3>
 
@@ -31,14 +32,6 @@
 <p>Depending on the user checking/unchecking the 'Expand All Features' checkbox, the group will be added to QGIS fully expanded or completely collapsed.</p>
 <p>The plugin saves the folder corresponding to the last valid file choice in its settings, to be used when choosing a new file and, when closed, it saves the state of the 'Expand All Features' checkbox, the size and location of the window</p>
 <p><b>This plugin was created during leisure moments, as a challenge. So, it is possible that, in the near future, this project will not continue.</b></p>
-<h3>Material used as an example or inspiration:</h3>
-<ol>
-    <li> 
-        <a href="https://www.youtube.com/@afonso.santos">Afonso P. Santos</a> => <a href="https://www.youtube.com/playlist?list=PLzkRIHrvhf6ZHegTilDli3WIOGKBB9Nll">Desenvolvimento de plugin para o QGIS</a>  
-    </li>
-    <li> 
-        <a href="https://www.youtube.com/@GeoSemFronteiras">GeoSemFronteiras</a> => <a href="https://www.youtube.com/watch?v=fpP0QjBcyq8&ab_channel=GeoSemFronteiras">Aula 1/5 - Criando Plugins com Python no QGIS</a>
-    </li>
-</ol>
+
 </body>
 </html>
