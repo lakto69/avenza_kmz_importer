@@ -4,7 +4,7 @@
 
 <h3>What motivated me to create this plugin:</h3>
 
-<p>Only after plotting more than a hundred points, in the field, in the <a href="https://store.avenza.com/">Avenza Maps</a>, taking care to use an icon style to represent each type of point we were plotting, and trying to import them into <a href="https://qgis.org/">QGIS</a> did we realize that we were not it was possible to import the features while preserving the symbology style used in Avenza (or another equivalent, which could group the points by type of symbology). And so, we ended up losing a very important dimension of information that we used in that app: the symbolism of the dot.
+<p>Only after plotting more than a hundred points, in the field, using the <a href="https://store.avenza.com/">Avenza Maps</a>, taking care to use an icon style to represent each type of point we were plotting, and trying to import them into <a href="https://qgis.org/">QGIS</a> did we realize that we were not it was possible to import the features while preserving the symbology style used in Avenza (or another equivalent, which could group the points by type of symbology). And so, we ended up losing a very important dimension of information that we used in that app: the symbolism of the dot.
 </p>
 <p>So, I decided to create this plugin.</p>
 
