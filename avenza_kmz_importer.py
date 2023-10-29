@@ -28,7 +28,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QSettings
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog # CAIXA DE DIÁLOGO
-from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol
+from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
 from lxml import etree
 import zipfile
 import pandas as pd
@@ -98,13 +98,19 @@ class AvenzaKMZImporter:
         self.directory = self.settings.value('dialog/directory', self.plugin_dir)
         # Redefine self.dlg.checkBoxExpandirFeicoes.isChecked()
         self.dlg.checkBoxExpandirFeicoes.setChecked(bool(self.settings.value('dialog/expand', 'true')))
+        # Redefine self.dlg.checkBoxRotularNome.isChecked()
+        self.dlg.checkBoxRotularNome.setChecked(bool(self.settings.value('dialog/rotular', 'true')))
 
+        self.t = '{http://www.opengis.net/kml/2.2}'
+        self.tx = '{http://www.google.com/kml/ext/2.2}'
+        self.setInicial()
+
+    def setInicial(self):
         self.simbologia = None
         self.tree = None
         self.point_cols = ['Name', 'geometry', 'Time', 'Style', 'Notes', 'Icon_URL', 'Icon_local']
         self.esquemas = {}
-        self.t = '{http://www.opengis.net/kml/2.2}'
-        self.tx = '{http://www.google.com/kml/ext/2.2}'
+
 
     def initDialog(self):
         # Inicialize o diálogo e faça todas as configurações necessárias
@@ -126,6 +132,8 @@ class AvenzaKMZImporter:
         self.settings.setValue('dialog/pos', self.dlg.pos())
         # Salvar a situação atual de expandir o grupo
         self.settings.setValue('dialog/expand', self.dlg.checkBoxExpandirFeicoes.isChecked())
+        # Salvar a situação atual de rotular feições
+        self.settings.setValue('dialog/rotular', self.dlg.checkBoxRotularNome.isChecked())
         # Salvar o tamanho da janela
         self.settings.setValue('dialog/size', self.dlg.size())        
 
@@ -298,6 +306,7 @@ class AvenzaKMZImporter:
     def pushBtImportar(self):
         self.cursor_wait()
         self.dlg.textBrowser_Log.clear()
+        self.setInicial()
 
         self.arquivo_kml = self.dlg.lineEdit_KML.text()
 
@@ -376,6 +385,9 @@ class AvenzaKMZImporter:
 
             # Atribua a simbologia à camada
             layer_add.setRenderer(renderer)
+
+            # Mostra a contagem de elementos
+            layer_add.setCustomProperty("showFeatureCount", True)
 
             # Atualize a exibição da camada
             layer_add.triggerRepaint()
@@ -457,13 +469,32 @@ class AvenzaKMZImporter:
             # Adicionando as camadas em um grupo:
             grupo.addLayer(layer_add)
 
+        # Rotular feições
+        if self.dlg.checkBoxRotularNome.isChecked():
+            self.setLabeling(layer_add)
+
         self.cursor_arrow()
+
+    def setLabeling(self, layer):
+        # Adicionando o rótulo da camada
+        label = QgsPalLayerSettings()
+        label.fieldName = 'Name'
+        label.isExpression = False
+        if layer.geometryType()==1:
+            label.placement = QgsPalLayerSettings.Line
+        else:
+            label.placement = QgsPalLayerSettings.AroundPoint
+
+        layer.setLabeling(QgsVectorLayerSimpleLabeling(label))
+        layer.setLabelsEnabled(True)
+        layer.triggerRepaint()      
 
     def setExpanded(self, expandir):
         self.node_group.setExpanded(expandir)
 
         for i in self.node_group.findLayers():
             i.setExpanded(expandir)
+            i.setCustomProperty("showFeatureCount", True)
             
         for i in self.node_group.findGroups():
             i.setExpanded(expandir)
@@ -570,6 +601,9 @@ class AvenzaKMZImporter:
 
             # Expande ou não o conteúdo do grupo
             self.setExpanded(self.dlg.checkBoxExpandirFeicoes.isChecked())
+            # # Rotular feições
+            # if self.dlg.checkBoxRotularNome.isChecked():
+            #     self.setLabeling()
 
         if len(tree.xpath('//kml:Folder', namespaces={'kml': self.t[1:-1]}))==0:
             self.add_log(self.tr(u'Erro'), self.tr(u'Não foi encontrada nenhuma camada para processar.'))
@@ -665,7 +699,7 @@ class AvenzaKMZImporter:
         for i in self.esquemas['track_schema']:
             if schemadata.get(i) is not None:
                 tamanho.add(len(schemadata.get(i)))
-                print(f'{i}: {tamanho}')
+                # print(f'{i}: {tamanho}')
             else:
                 faltam.append(i)
 
