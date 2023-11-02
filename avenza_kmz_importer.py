@@ -126,6 +126,21 @@ class AvenzaKMZImporter:
         # Conectar o evento de fechamento do diálogo para salvar a posição
         self.dlg.finished.connect(self.saveDialogPosition)
 
+        # Internacionalizando o app:
+        self.dlg.label.setText(self.tr('Arquivo KML ou KMZ:'))
+        self.dlg.lineEdit_KML.setToolTip(self.tr('Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.'))
+        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use o botão ao lado para escolher o arquivo...'))
+        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Clique aqui para escolher o arquivo a ser adicionado no projeto.'))
+        self.dlg.tbEscolherArquivo.setText(self.tr('Escolher arquivo.'))
+        self.dlg.label_2.setText(self.tr('Adicionar ao Grupo:'))
+        self.dlg.lineEdit_Grupo.setToolTip(self.tr('Caso esteja em branco, as feições serão importadas para o grupo "Avenza".'))
+        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expandir Todas as Feições'))
+        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Marque para que o Grupo criado seja expandido.'))
+        self.dlg.checkBoxRotularNome.setText(self.tr('Rotular Feições Pelos Nomes'))
+        self.dlg.groupBox.setTitle(self.tr('Processamento....'))
+        self.dlg.pushBtImportar.setText(self.tr('I&mportar'))
+        self.dlg.setWindowTitle(self.tr('Importar Arquivo KML ou KMZ do Avenza'))
+
     def saveDialogPosition(self, result):
         """Este método será chamado quando o diálogo for fechado"""
         # Salvar a posição atual do diálogo
@@ -349,6 +364,7 @@ class AvenzaKMZImporter:
         Recebe um DataFrame e um nome de camada.
         Adiciona esse DataFrame no Qgis numa camada com o nome nome_camada
         """
+        # pass
         self.cursor_wait()
         # Transformar o df em gpd
         gdf_camada = gpd.GeoDataFrame(df_camada, crs='EPSG:4326')
@@ -626,17 +642,24 @@ class AvenzaKMZImporter:
             else:
                 self.add_log(self.tr(u'Não foi possível importar'), f"{self.tr(u'De')}: [{camada}].<br>{self.tr(u'Feição')}: {placemark.find(f'{self.t}name').text}, {self.tr(u'por não ser do tipo')} Point, LineString, Polygon ou Track.")
                 continue # Ignorar outros tipos de feição não suportados
-            # notes
+            # Notes
             notes = {}
             for nota in placemark.findall(f'./*//{self.t}SimpleData'):
                 notes[nota.attrib.values()[0]] = nota.text
+            # Name
+            feature_name = placemark.find(f'{self.t}name')
+            if feature_name != None:
+                feature_name = placemark.find(f'{self.t}name').text
 
-            feature_name = placemark.find(f'{self.t}name').text
-            time = placemark.find(f'./*/{self.t}when').text
+            # Time
+            time = placemark.find(f'./*/{self.t}when')
+            if time != None:
+                time = placemark.find(f'./*/{self.t}when').text
+            # Style
             urlstyle = placemark.find(f'./{self.t}styleUrl').text.replace('#', '')
-            # Ícone
+            # Icon_URL
             icon_url = self.simbologia[urlstyle].get('href')
-            # Ícone "local"
+            # Icon_local
             try:
                 icon_local = self.simbologia[urlstyle].get('href').split('/')[-1].split('.')[0] + '.svg'
             except:
@@ -659,10 +682,11 @@ class AvenzaKMZImporter:
                 coordinates = [(float(coordinates[i]), float(coordinates[i + 1]), float(coordinates[i + 2])) for i in range(0, len(coordinates), 3)]
 
             # Criar uma geometria com base no tipo de feição
+            # geometry
             if feature_type == 'Point':
                 geometry = Point(coordinates[0][0], coordinates[0][1], coordinates[0][2])
                 if self.esquemas.get('track_schema') is not None:
-                    points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local] + [None for x in list(self.esquemas['track_schema'].keys())]))
+                    points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local] + [None, None] + [None for x in list(self.esquemas['track_schema'].keys())]))
                 else:
                     points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local]))
 
@@ -714,7 +738,9 @@ class AvenzaKMZImporter:
                 pass
 
     def extract_track_data(self, tree):
+        # when
         when = [x.text for x in tree.find(f'.//{self.tx}Track').findall(f'{self.t}when')]
+        # angles
         angles = [x.text for x in tree.find(f'.//{self.tx}Track').findall(f'{self.tx}angles')]
         coord = [x.text for x in tree.find(f'.//{self.tx}Track').findall(f'{self.tx}coord')]
 
@@ -722,7 +748,7 @@ class AvenzaKMZImporter:
         longitude = [p[0] for p in pontos]
         latitude = [p[1] for p in pontos]
         altitude = [p[2] for p in pontos]
-
+        # geometry
         geometry_track_points = [Point(xy) for xy in zip(longitude, latitude, altitude)]
         if len(pontos)>1:
             geometry_track_lines = [LineString([(point[0], point[1]) for point in pontos])]
