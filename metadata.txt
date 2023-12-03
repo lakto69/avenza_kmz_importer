@@ -6,7 +6,7 @@
 name=Avenza Maps's KML/KMZ File Importer
 qgisMinimumVersion=3.0
 description=This plugin import features from KML e KMZ files from Avenza Maps
-version=1.02
+version=1.2
 author=Andrés de M. Leite
 email=leite.m.andres@gmail.com
 
@@ -21,11 +21,11 @@ repository=https://github.com/lakto69/avenza_kmz_importer
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 changelog=
-  Version 1.01 (29/10/2023)
+  Version 1.1 (29/10/2023)
   - Adds element count to layers;
   - Add choice of automatic labeling of layer features;
   - Bug fixes;
-  Version 1.02 (02/11/2023)
+  Version 1.2 (02/11/2023)
   - Bug fixes I: point features were not being imported when there was a '<gx:Track>' type feature in the file;
   - Bug fixes II: point features without <name> or <when> tags were breaking the plugin.
 
