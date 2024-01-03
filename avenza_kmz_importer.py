@@ -58,10 +58,14 @@ class AvenzaKMZImporter:
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
+        # locale_path = os.path.join(
+        #     self.plugin_dir,
+        #     'i18n',
+        #     'avenza_kmz_importer_en.qm')
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
-            'AvenzaKMZImporter_{}.qm'.format(locale))
+            'avenza_kmz_importer_{}.qm'.format(locale))
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
