@@ -1,4 +1,6 @@
 - Corrigir duplicação de menu, dentro do Menu Complementos;
-- Implementar showAttributeTable;
-- Implementar o processamento de imagens durante a importação;
+- Implementar o processamento de imagens durante a importação do KMZ;
+- Filtrar arquivo inadequado com mensagem de erro coerente e retirar 'ampulheta' do mouse;
+   - [Verificar erro em POC AM-2.kml (Provavelmente por não ter sido criado pelo Avenza): File "C:\Users/dezes/AppData/Roaming/QGIS/QGIS3\profiles\AML/python/plugins\avenza_kmz_importer\avenza_kmz_importer.py", line 665, in process_placemarks
+              icon_url = self.simbologia[urlstyle].get('href')]
 - 

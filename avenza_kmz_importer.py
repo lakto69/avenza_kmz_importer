@@ -27,9 +27,9 @@
 # Bibliotecas:
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QSettings
 from qgis.PyQt.QtGui import QIcon, QColor
-from qgis.PyQt.QtWidgets import QAction, QFileDialog # CAIXA DE DIÁLOGO
+from qgis.PyQt.QtWidgets import QToolButton, QAction, QFileDialog # CAIXA DE DIÁLOGO
 from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
-from qgis.core import Qgis #.MessageLevel
+from qgis.core import Qgis, QgsMapLayer #.MessageLevel
 
 from lxml import etree
 import zipfile
@@ -180,79 +180,79 @@ class AvenzaKMZImporter:
             QCoreApplication.installTranslator(translator)
         return QCoreApplication.translate('AvenzaKMZImporter', message)
 
-    def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
-        """Add a toolbar icon to the toolbar.
+    # def add_action(
+    #     self,
+    #     icon_path,
+    #     text,
+    #     callback,
+    #     enabled_flag=True,
+    #     add_to_menu=True,
+    #     add_to_toolbar=True,
+    #     status_tip=None,
+    #     whats_this=None,
+    #     parent=None):
+    #     """Add a toolbar icon to the toolbar.
 
-        :param icon_path: Path to the icon for this action. Can be a resource
-            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-        :type icon_path: str
+    #     :param icon_path: Path to the icon for this action. Can be a resource
+    #         path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
+    #     :type icon_path: str
 
-        :param text: Text that should be shown in menu items for this action.
-        :type text: str
+    #     :param text: Text that should be shown in menu items for this action.
+    #     :type text: str
 
-        :param callback: Function to be called when the action is triggered.
-        :type callback: function
+    #     :param callback: Function to be called when the action is triggered.
+    #     :type callback: function
 
-        :param enabled_flag: A flag indicating if the action should be enabled
-            by default. Defaults to True.
-        :type enabled_flag: bool
+    #     :param enabled_flag: A flag indicating if the action should be enabled
+    #         by default. Defaults to True.
+    #     :type enabled_flag: bool
 
-        :param add_to_menu: Flag indicating whether the action should also
-            be added to the menu. Defaults to True.
-        :type add_to_menu: bool
+    #     :param add_to_menu: Flag indicating whether the action should also
+    #         be added to the menu. Defaults to True.
+    #     :type add_to_menu: bool
 
-        :param add_to_toolbar: Flag indicating whether the action should also
-            be added to the toolbar. Defaults to True.
-        :type add_to_toolbar: bool
+    #     :param add_to_toolbar: Flag indicating whether the action should also
+    #         be added to the toolbar. Defaults to True.
+    #     :type add_to_toolbar: bool
 
-        :param status_tip: Optional text to show in a popup when mouse pointer
-            hovers over the action.
-        :type status_tip: str
+    #     :param status_tip: Optional text to show in a popup when mouse pointer
+    #         hovers over the action.
+    #     :type status_tip: str
 
-        :param parent: Parent widget for the new action. Defaults None.
-        :type parent: QWidget
+    #     :param parent: Parent widget for the new action. Defaults None.
+    #     :type parent: QWidget
 
-        :param whats_this: Optional text to show in the status bar when the
-            mouse pointer hovers over the action.
+    #     :param whats_this: Optional text to show in the status bar when the
+    #         mouse pointer hovers over the action.
 
-        :returns: The action that was created. Note that the action is also
-            added to self.actions list.
-        :rtype: QAction
-        """
+    #     :returns: The action that was created. Note that the action is also
+    #         added to self.actions list.
+    #     :rtype: QAction
+    #     """
 
-        icon = QIcon(icon_path)
-        action = QAction(icon, text, parent)
-        action.triggered.connect(callback)
-        action.setEnabled(enabled_flag)
+    #     icon = QIcon(icon_path)
+    #     action = QAction(icon, text, parent)
+    #     action.triggered.connect(callback)
+    #     action.setEnabled(enabled_flag)
 
-        if status_tip is not None:
-            action.setStatusTip(status_tip)
+    #     if status_tip is not None:
+    #         action.setStatusTip(status_tip)
 
-        if whats_this is not None:
-            action.setWhatsThis(whats_this)
+    #     if whats_this is not None:
+    #         action.setWhatsThis(whats_this)
 
-        if add_to_toolbar:
-            # Adds plugin icon to Plugins toolbar
-            self.iface.addToolBarIcon(action)
+    #     if add_to_toolbar:
+    #         # Adds plugin icon to Plugins toolbar
+    #         self.iface.addToolBarIcon(action)
 
-        if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
+    #     if add_to_menu:
+    #         self.iface.addPluginToMenu(
+    #             self.menu,
+    #             action)
 
-        self.actions.append(action)
+    #     self.actions.append(action)
 
-        return action
+    #     return action
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
@@ -273,6 +273,7 @@ class AvenzaKMZImporter:
         icon_path = ':/plugins/avenza_kmz_importer/tela1.png' # TODO: Criar um ícone pra cá
         self.showTable = QAction(QIcon(icon_path), 'Show Attribute Table', self.iface.mainWindow())
         self.showTable.triggered.connect(self.showAttributeTable)
+        # self.showTable.setEnabled(False)
         self.toolbar.addAction(self.showTable)
         self.iface.addPluginToMenu('&Avenza KML/KMZ Import Tools', self.showTable)
 
@@ -291,8 +292,32 @@ class AvenzaKMZImporter:
         self.toolbar.deleteLater()
         self.toolbar = None            
 
-    def showAttributeTable(self): # TODO: implementar showAttributeTable
-        self.iface.messageBar().pushMessage(self.tr("Informação"), "showAttributeTable chamado", level=Qgis.Info)
+    def warning_message(self, err_text):
+        self.iface.messageBar().pushMessage(self.tr("Error"), err_text, level=Qgis.Warning)
+    
+    def showAttributeTable(self):
+        # Obtém a camada ativa
+        layer = self.iface.activeLayer()
+        
+        # Verifica se a camada é válida
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
+            if layer.featureCount() >0:
+                # Versão Formulário de Atributos
+                # Abrir o formulário de atributos
+                janela = self.iface.showAttributeTable(layer)
+                for filho in janela.children():
+                    if type(filho)==QToolButton and filho.objectName()=='mAttributeViewButton':
+                        if not filho.isChecked():
+                            filho.click()
+                        break
+            else:
+                # msg = self.tr("O Vetor selecionado não contém feições.")
+                msg = self.tr("Selected vector layer contains no features.")
+                self.warning_message(msg)
+        else:
+            # msg = self.tr("Nenhuma camada vetorial foi selecionada.")
+            msg = self.tr("No vector layer selected.")
+            self.warning_message(msg)
 
     def run(self):
         """Run method that performs all the real work"""

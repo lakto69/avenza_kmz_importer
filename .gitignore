@@ -154,4 +154,5 @@ cython_debug/
 rascunhos/
 .rascunhos/
 rascunhos.ipynb
-rascunhos.ipynb
+testes/
+.testes/
