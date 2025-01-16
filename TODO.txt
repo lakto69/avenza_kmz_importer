@@ -1,0 +1,4 @@
+- Corrigir duplicação de menu, dentro do Menu Complementos;
+- Implementar showAttributeTable;
+- Implementar o processamento de imagens durante a importação;
+- 

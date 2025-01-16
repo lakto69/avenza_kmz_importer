@@ -29,6 +29,8 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QSett
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog # CAIXA DE DIÁLOGO
 from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
+from qgis.core import Qgis #.MessageLevel
+
 from lxml import etree
 import zipfile
 import pandas as pd
@@ -255,13 +257,24 @@ class AvenzaKMZImporter:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        # Teste: Criação de uma toolbar
+        self.toolbar = self.iface.addToolBar('Avenza KML/KMZ Import Toolbar')
+        self.toolbar.setObjectName('AvenzaKMLKMZImportToolbar')
+        self.toolbar.setToolTip('Avenza KML/KMZ Import Toolbar')
+
+        # Ícone do KML/KMZ Import
         icon_path = ':/plugins/avenza_kmz_importer/icon.png'
-        # icon_path = ':/plugins/avenza_kmz_importer/icon.ico'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Avenza KML/KMZ'),
-            callback=self.run,
-            parent=self.iface.mainWindow())
+        self.kmlImport = QAction(QIcon(icon_path), 'Avenza KML/KMZ Import', self.iface.mainWindow())
+        self.kmlImport.triggered.connect(self.run)
+        self.toolbar.addAction(self.kmlImport)
+        self.iface.addPluginToMenu('&Avenza KML/KMZ Import Tools', self.kmlImport)
+
+        # Ícone do showAttributeTable      
+        icon_path = ':/plugins/avenza_kmz_importer/tela1.png' # TODO: Criar um ícone pra cá
+        self.showTable = QAction(QIcon(icon_path), 'Show Attribute Table', self.iface.mainWindow())
+        self.showTable.triggered.connect(self.showAttributeTable)
+        self.toolbar.addAction(self.showTable)
+        self.iface.addPluginToMenu('&Avenza KML/KMZ Import Tools', self.showTable)
 
         # will be set False in run()
         self.first_start = True
@@ -273,6 +286,13 @@ class AvenzaKMZImporter:
                 self.tr(u"&Avenza Maps's KML/KMZ File Importer"),
                 action)
             self.iface.removeToolBarIcon(action)
+
+        # Teste: Criação de uma toolbar
+        self.toolbar.deleteLater()
+        self.toolbar = None            
+
+    def showAttributeTable(self): # TODO: implementar showAttributeTable
+        self.iface.messageBar().pushMessage(self.tr("Informação"), "showAttributeTable chamado", level=Qgis.Info)
 
     def run(self):
         """Run method that performs all the real work"""
