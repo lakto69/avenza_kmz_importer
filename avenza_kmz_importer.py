@@ -289,8 +289,7 @@ class AvenzaKMZImporter:
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
-        # result = self.dlg.exec_() # não funciona em Qt6
-        result = self.dlg.exec() # TODO Fazer uma verificação se é Qt5 ou Qt6 e usar o método correto
+        result = self.dlg.exec()
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
