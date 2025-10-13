@@ -25,7 +25,7 @@
  ***************************************************************************/
 """
 # Bibliotecas:
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QSettings
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog # CAIXA DE DIÁLOGO
 from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
@@ -289,7 +289,8 @@ class AvenzaKMZImporter:
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
-        result = self.dlg.exec_()
+        # result = self.dlg.exec_() # não funciona em Qt6
+        result = self.dlg.exec() # TODO Fazer uma verificação se é Qt5 ou Qt6 e usar o método correto
         # See if OK was pressed
         if result:
             # Do something useful here - delete the line containing pass and
