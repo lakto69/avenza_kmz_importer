@@ -35,10 +35,10 @@ changelog=
 tags=python, import, kmz, kml, point, polygon, line, avenza
 
 homepage=https://github.com/lakto69/avenza_kmz_importer
-category=Plugins
 icon=icon.ico
 # experimental flag
 experimental=True
+supportsQt6=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
@@ -48,8 +48,8 @@ deprecated=False
 # Check the documentation for more information.
 # plugin_dependencies=
 
-Category of the plugin: Raster, Vector, Database or Web
-# category=
+# Category of the plugin: Raster, Vector, Database or Web
+category=Vector
 
 # If the plugin can run on QGIS Server.
 server=False

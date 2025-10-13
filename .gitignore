@@ -154,3 +154,4 @@ cython_debug/
 rascunhos/
 .rascunhos/
 rascunhos.ipynb
+.vscode/launch.json
