@@ -28,6 +28,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QToolButton, QAction, QFileDialog # CAIXA DE DIÁLOGO
+from qgis.PyQt.QtWidgets import QApplication # Verificar se a janela está fora do monitor
 from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
 from qgis.core import Qgis, QgsMapLayer #.MessageLevel
 
@@ -90,7 +91,7 @@ class AvenzaKMZImporter:
         # Inicializa o diálogo e define sua posição com base nas configurações
         self.arquivo_kml = ''
 
-        self.initDialog()
+        self.initDialog() 
         # Recoloca a janela na posição onde foi fechada antes
         dialog_pos = self.settings.value('dialog/pos', None)
         if dialog_pos:
@@ -110,6 +111,14 @@ class AvenzaKMZImporter:
         self.t = '{http://www.opengis.net/kml/2.2}'
         self.tx = '{http://www.google.com/kml/ext/2.2}'
         self.setInicial()
+
+        # TODO: Testar se a pasta de ícones existe???
+        # # conferir se self.arquivo_kml existe, caso contrário, gerar erro:
+        # # check if self.arquivo_kml exists, if not, generate error:
+        # if not os.path.exists(self.arquivo_kml):
+        #     raise ValueError("self.arquivo_kml does not exist. Please provide a valid file path.")
+        
+        # self.arquivo_kml = arquivo
 
     def setInicial(self):
         self.simbologia = None
@@ -180,80 +189,6 @@ class AvenzaKMZImporter:
             QCoreApplication.installTranslator(translator)
         return QCoreApplication.translate('AvenzaKMZImporter', message)
 
-    # def add_action(
-    #     self,
-    #     icon_path,
-    #     text,
-    #     callback,
-    #     enabled_flag=True,
-    #     add_to_menu=True,
-    #     add_to_toolbar=True,
-    #     status_tip=None,
-    #     whats_this=None,
-    #     parent=None):
-    #     """Add a toolbar icon to the toolbar.
-
-    #     :param icon_path: Path to the icon for this action. Can be a resource
-    #         path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-    #     :type icon_path: str
-
-    #     :param text: Text that should be shown in menu items for this action.
-    #     :type text: str
-
-    #     :param callback: Function to be called when the action is triggered.
-    #     :type callback: function
-
-    #     :param enabled_flag: A flag indicating if the action should be enabled
-    #         by default. Defaults to True.
-    #     :type enabled_flag: bool
-
-    #     :param add_to_menu: Flag indicating whether the action should also
-    #         be added to the menu. Defaults to True.
-    #     :type add_to_menu: bool
-
-    #     :param add_to_toolbar: Flag indicating whether the action should also
-    #         be added to the toolbar. Defaults to True.
-    #     :type add_to_toolbar: bool
-
-    #     :param status_tip: Optional text to show in a popup when mouse pointer
-    #         hovers over the action.
-    #     :type status_tip: str
-
-    #     :param parent: Parent widget for the new action. Defaults None.
-    #     :type parent: QWidget
-
-    #     :param whats_this: Optional text to show in the status bar when the
-    #         mouse pointer hovers over the action.
-
-    #     :returns: The action that was created. Note that the action is also
-    #         added to self.actions list.
-    #     :rtype: QAction
-    #     """
-
-    #     icon = QIcon(icon_path)
-    #     action = QAction(icon, text, parent)
-    #     action.triggered.connect(callback)
-    #     action.setEnabled(enabled_flag)
-
-    #     if status_tip is not None:
-    #         action.setStatusTip(status_tip)
-
-    #     if whats_this is not None:
-    #         action.setWhatsThis(whats_this)
-
-    #     if add_to_toolbar:
-    #         # Adds plugin icon to Plugins toolbar
-    #         self.iface.addToolBarIcon(action)
-
-    #     if add_to_menu:
-    #         self.iface.addPluginToMenu(
-    #             self.menu,
-    #             action)
-
-    #     self.actions.append(action)
-
-    #     return action
-
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
@@ -270,7 +205,7 @@ class AvenzaKMZImporter:
         self.iface.addPluginToMenu('&Avenza KML/KMZ Import Tools', self.kmlImport)
 
         # Ícone do showAttributeTable      
-        icon_path = ':/plugins/avenza_kmz_importer/tela1.png' # TODO: Criar um ícone pra cá
+        icon_path = ':/plugins/avenza_kmz_importer/tela1.png'
         self.showTable = QAction(QIcon(icon_path), 'Show Attribute Table', self.iface.mainWindow())
         self.showTable.triggered.connect(self.showAttributeTable)
         # self.showTable.setEnabled(False)
@@ -295,6 +230,17 @@ class AvenzaKMZImporter:
     def warning_message(self, err_text):
         self.iface.messageBar().pushMessage(self.tr("Error"), err_text, level=Qgis.Warning)
     
+    def reposicionar_se_fora_da_tela(self, janela):
+        visivel = False
+        for screen in QApplication.screens():
+            if screen.geometry().intersects(janela.frameGeometry()):
+                visivel = True
+                break
+
+        if not visivel:
+            # Reposiciona para o canto superior esquerdo do monitor principal
+            janela.move(100, 100)
+
     def showAttributeTable(self):
         # Obtém a camada ativa
         layer = self.iface.activeLayer()
@@ -333,6 +279,8 @@ class AvenzaKMZImporter:
 
         # show the dialog
         self.dlg.show()
+        self.reposicionar_se_fora_da_tela(self.dlg) 
+
         # Run the dialog event loop
         result = self.dlg.exec()
         # See if OK was pressed
@@ -358,8 +306,29 @@ class AvenzaKMZImporter:
             self.dlg.pushBtImportar.setDisabled(False)
             self.settings.setValue('dialog/directory', os.path.dirname(kml_abrir))
             self.dlg.lineEdit_Grupo.setText(os.path.basename(kml_abrir))
+        else:
+            # Limpa os campos da janela
+            self.initialize()
 
-        self.cursor_arrow()            
+        self.cursor_arrow()           
+
+
+    def tbEscolherPastaImagens(self):
+        """ 
+        Abre a janela de diálogo para escolher a pasta onde as imagens serão salvas
+        """
+        self.cursor_wait()
+
+        pasta_imagens = str(QFileDialog.getExistingDirectory(caption=self.tr(u"Escolha a pasta para salvar as imagens..."), directory=self.directory))
+
+        # Se a pasta_imagens <> Vazio
+        if (pasta_imagens != ""):
+            return pasta_imagens
+        else:
+            return None
+
+        self.cursor_arrow()
+
 
     def idle_pushBtImportar(self):
         if os.path.exists(self.dlg.lineEdit_KML.text()):
@@ -381,18 +350,28 @@ class AvenzaKMZImporter:
 
         # Adicionando grupo
         root = QgsProject.instance().layerTreeRoot()
-        self.node_group = root.addGroup(grupo)
+        self.node_group = root.addGroup(grupo) # TODO: Substituir por self.node_group = [] ???
 
         # Parseando o arquivo `KML`:
         # Verificando se o arquivo é KML ou KMZ
         if self.arquivo_kml.lower().endswith('.kmz'):
-            source_kml, name_kml = self.extract_kml_from_kmz(self.arquivo_kml)
-            # self.add_log('Processando o arquivo', name_kml)
-            self.add_log('Processando o arquivo KMZ', self.arquivo_kml)
-            self.add_log('Processando o arquivo KML interno', name_kml)            
+            zipfile_kmz =self.open_kmz(self, self.arquivo_kml) # TODO: AJEITANDO ISTO AQUI
+
+            source_kml, name_kml = self.extract_kml_from_kmz(zipfile_kmz)
+            # Verifica se existem imagens dentro da pasta 'images'
+            if len([item.filename for item in zipfile_kmz.infolist() if item.filename.lower().startswith('images/')]) > 0:
+                retorno = self.extract_images_from_kmz(zipfile_kmz) 
+                if retorno is not None:
+                    self.add_log(self.tr(u'Erro ao extrair imagens do KMZ'), retorno)
+                    self.cursor_arrow()
+                    return
+            zipfile_kmz = None
+
+            self.add_log(self.tr(u'Processando o arquivo KMZ'), self.arquivo_kml)
+            self.add_log(self.tr(u'Processando o arquivo KML interno'), name_kml)
             self.tree = etree.fromstring(source_kml)
         else:
-            self.add_log('Processando o arquivo KML', self.arquivo_kml)
+            self.add_log(self.tr(u'Processando o arquivo KML'), self.arquivo_kml)
             self.tree = etree.parse(self.arquivo_kml)
 
         self.process_simbologia(self.tree)
@@ -564,19 +543,67 @@ class AvenzaKMZImporter:
         for i in self.node_group.findGroups():
             i.setExpanded(expandir)
 
-    def extract_kml_from_kmz(self, arquivo_kmz):
+    def open_kmz(self, arquivo_kmz):
         self.cursor_wait()
         try:
             with zipfile.ZipFile(arquivo_kmz, 'r') as kmz_file:
-                for nome_arquivo in kmz_file.namelist():
-                    if nome_arquivo.lower().endswith('.kml'):
-                        with kmz_file.open(nome_arquivo) as kml_file:
-                            source_kml = kml_file.read()
-                            return source_kml, nome_arquivo
+                return kmz_file
+
+        except Exception as e:
+            self.add_log(f"{self.tr(u'Erro ao abrir o KMZ')} => {str(e)}\n")
+        self.cursor_arrow()
+
+    def extract_kml_from_kmz(self, kmz_file):
+        self.cursor_wait()
+        try:
+            for nome_arquivo in kmz_file.namelist():
+
+                if nome_arquivo.lower().endswith('.kml'):
+                    with kmz_file.open(nome_arquivo) as kml_file:
+                        source_kml = kml_file.read()
+                        return source_kml, nome_arquivo
                         
         except Exception as e:
             self.add_log(f"{self.tr(u'Erro ao extrair KML do KMZ')} => {str(e)}\n")
         self.cursor_arrow()
+
+    def extract_images_from_kmz(self, kmz_file): # TODO: Finalizar este método
+        # TODO: Pedir ao usuário o local onde salvar as imagens
+        pasta_imagens = self.tbEscolherPastaImagens()
+        if pasta_imagens: # TODO: Extrai as imagens para a pasta escolhida
+            # # Garante que o diretório de destino existe TODO: Desnecessário!!
+            # os.makedirs(pasta_imagens, exist_ok=True)
+
+            for nome_arquivo in kmz_file.namelist():
+                if nome_arquivo.lower().startswith('images/'):
+                    with kmz_file.open(nome_arquivo) as imagem_file:
+                        with open(os.path.join(pasta_imagens, nome_arquivo.split('/')[-1]), 'wb') as f:
+                            f.write(imagem_file.read())
+
+            return None        
+        # # TODO: Verificar se existem arquivos de imagem dentro da pasta 'images'
+        # if nome_arquivo.lower().startswith('images/'):
+        #     # TODO: Pedir ao usuário o local onde salvar as imagens
+        #     pasta_imagens = self.tbEscolherPastaImagens()
+        #     if pasta_imagens: # TODO: Extrai as imagens para a pasta escolhida
+        #         # Garante que o diretório de destino existe TODO: Desnecessário!!
+        #         os.makedirs(pasta_imagens, exist_ok=True)
+        #         # Abre o arquivo ZIP
+        #         with zipfile.ZipFile(arquivo_kmz, 'r') as zip_ref:
+        #             # Itera sobre os arquivos dentro do ZIP
+        #             for file_info in zip_ref.infolist():
+        #                 # Verifica se é um arquivo JPG
+        #                 if file_info.filename.lower().endswith('.jpg'):
+        #                     # Extrai apenas o nome do arquivo (sem o caminho interno)
+        #                     filename = os.path.basename(file_info.filename)
+        #                     # Cria o caminho completo de destino
+        #                     target_path = os.path.join(pasta_imagens, filename)
+        #                     # Abre o arquivo dentro do ZIP e grava no destino
+        #                     with zip_ref.open(file_info) as source, open(target_path, 'wb') as target:
+        #                         target.write(source.read())
+
+        else: # Cancela a extração
+            return self.tr(u'Erro: Cancelado pelo usuário')
 
     def process_simbologia(self, tree):
         # Computando as Simbologias:

@@ -13,7 +13,7 @@
             "pathMappings": [
                 {
                     "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "C:/Users/dezes/AppData/Roaming/QGIS/QGIS3/profiles/AML/python/plugins/avenza_kmz_importer"
+                    "remoteRoot": "C:/Users/dezes/AppData/Roaming/QGIS/QGIS3/profiles/AML/python/plugins/avenza_kml_importer"
                 }
             ],
             "justMyCode": true

@@ -27,7 +27,8 @@ changelog=
   Version 1.5 (XX/XX/2025)
   - Added a new feature: Open Attributes Form, to view images associated with Points, Lines and Polygons.
   - Created a tool-specific toolbar.
-  - 
+  - Fixed: Window is repositioned if it was closed on a second monitor that is no longer connected.
+  - XXX
   Version 1.4 (13/10/2025)
   - Qt6 compatibility added;
   - Portuguese translation of the 'description' and 'about' fields, according to the language defined in the Qgis system.
