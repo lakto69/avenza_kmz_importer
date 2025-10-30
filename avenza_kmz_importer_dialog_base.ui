@@ -14,7 +14,10 @@
    <bool>false</bool>
   </property>
   <property name="windowTitle">
-   <string>Importar Arquivo KML ou KMZ do Avenza</string>
+   <string>Import KML or KMZ File from Avenza</string>
+  </property>
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
@@ -22,7 +25,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Arquivo KML ou KMZ:</string>
+        <string>KML or KMZ file:</string>
        </property>
       </widget>
      </item>
@@ -32,10 +35,10 @@
         <bool>true</bool>
        </property>
        <property name="toolTip">
-        <string>Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.</string>
+        <string>Use the button next to it to choose the file to add to the project.</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
+        <set>Qt::InputMethodHint::ImhNone</set>
        </property>
        <property name="inputMask">
         <string/>
@@ -44,7 +47,7 @@
         <bool>true</bool>
        </property>
        <property name="placeholderText">
-        <string>Use o botão ao lado para escolher o arquivo...</string>
+        <string>Use the button next to select the file...</string>
        </property>
       </widget>
      </item>
@@ -54,25 +57,25 @@
         <bool>true</bool>
        </property>
        <property name="toolTip">
-        <string>Clique aqui para escolher o arquivo a ser adicionado no projeto.</string>
+        <string>Click here to choose the file to be added to the project.</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
+        <set>Qt::InputMethodHint::ImhNone</set>
        </property>
        <property name="text">
-        <string>Escolher arquivo</string>
+        <string>Select file</string>
        </property>
        <property name="checkable">
         <bool>false</bool>
        </property>
        <property name="popupMode">
-        <enum>QToolButton::DelayedPopup</enum>
+        <enum>QToolButton::ToolButtonPopupMode::DelayedPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonIconOnly</enum>
+        <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
        </property>
        <property name="arrowType">
-        <enum>Qt::NoArrow</enum>
+        <enum>Qt::ArrowType::NoArrow</enum>
        </property>
       </widget>
      </item>
@@ -83,7 +86,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Adicionar ao Grupo:</string>
+        <string>Add to Group:</string>
        </property>
       </widget>
      </item>
@@ -93,10 +96,10 @@
         <bool>true</bool>
        </property>
        <property name="toolTip">
-        <string>Caso esteja em branco, as feições serão importadas para o grupo &quot;Avenza&quot;</string>
+        <string>If blank, the features will be imported into the &quot;Avenza&quot; group</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
+        <set>Qt::InputMethodHint::ImhNone</set>
        </property>
        <property name="inputMask">
         <string/>
@@ -119,13 +122,13 @@
      <item>
       <widget class="QCheckBox" name="checkBoxExpandirFeicoes">
        <property name="toolTip">
-        <string>Marque para que o Grupo criado seja expandido ou </string>
+        <string>Check to have the created Group expanded or </string>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
+        <enum>Qt::LayoutDirection::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>Expandir Todas as Feições</string>
+        <string>Expand All Features</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -135,7 +138,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -151,10 +154,10 @@
         <string/>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::RightToLeft</enum>
+        <enum>Qt::LayoutDirection::RightToLeft</enum>
        </property>
        <property name="text">
-        <string>Rotular Feições Pelos Nomes</string>
+        <string>Label Features by Name</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -166,16 +169,16 @@
    <item row="3" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Processamento</string>
+      <string>Processing</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <widget class="QTextBrowser" name="textBrowser_Log">
         <property name="toolTip">
-         <string>Log do processamento.</string>
+         <string>Processing log.</string>
         </property>
         <property name="whatsThis">
-         <string>Log do processamento.</string>
+         <string>Processing log.</string>
         </property>
         <property name="documentTitle">
          <string>Log:</string>
@@ -196,14 +199,14 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>I&amp;mportar</string>
+        <string>I&amp;mport</string>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -225,16 +228,16 @@
         </sizepolicy>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::ImhNone</set>
+        <set>Qt::InputMethodHint::ImhNone</set>
        </property>
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
+        <set>QDialogButtonBox::StandardButton::Close</set>
        </property>
        <property name="centerButtons">
         <bool>true</bool>

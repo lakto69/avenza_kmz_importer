@@ -65,10 +65,12 @@ class AvenzaKMZImporter:
         #     self.plugin_dir,
         #     'i18n',
         #     'avenza_kmz_importer_en.qm')
+
+        # o locale de qualquer português é 'pt'! O arquivo traduzido deve ser: 'avenza_kmz_importer_pt.qm', não 'pt_br'!!!
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
-            'avenza_kmz_importer_{}.qm'.format(locale))
+            'avenza_kmz_importer_{}.qm'.format(locale)) 
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -77,7 +79,8 @@ class AvenzaKMZImporter:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u"&Avenza Maps's KML/KMZ File Importer")
+        self.menu = self.tr("&Avenza Maps's KML/KMZ File Importer")
+        # self.menu = self.tr("Importador de Arquivo KML/KMZ do &Avenza Maps")
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
@@ -142,19 +145,20 @@ class AvenzaKMZImporter:
         self.dlg.finished.connect(self.saveDialogPosition)
 
         # Internacionalizando o app:
-        self.dlg.label.setText(self.tr('Arquivo KML ou KMZ:'))
-        self.dlg.lineEdit_KML.setToolTip(self.tr('Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.'))
-        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use o botão ao lado para escolher o arquivo...'))
-        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Clique aqui para escolher o arquivo a ser adicionado no projeto.'))
-        self.dlg.tbEscolherArquivo.setText(self.tr('Escolher arquivo.'))
-        self.dlg.label_2.setText(self.tr('Adicionar ao Grupo:'))
-        self.dlg.lineEdit_Grupo.setToolTip(self.tr('Caso esteja em branco, as feições serão importadas para o grupo "Avenza".'))
-        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expandir Todas as Feições'))
-        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Marque para que o Grupo criado seja expandido.'))
-        self.dlg.checkBoxRotularNome.setText(self.tr('Rotular Feições Pelos Nomes'))
-        self.dlg.groupBox.setTitle(self.tr('Processamento....'))
-        self.dlg.pushBtImportar.setText(self.tr('I&mportar'))
-        self.dlg.setWindowTitle(self.tr('Importar Arquivo KML ou KMZ do Avenza'))
+        self.dlg.label.setText(self.tr('KML or KMZ File:'))
+        # self.dlg.lineEdit_KML.setToolTip(self.tr('Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.'))
+        self.dlg.lineEdit_KML.setToolTip(self.tr('Use the button next to it to select the file to add to the project.'))
+        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use the button next to it to select the file...'))
+        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Click here to select the file to be added to the project.'))
+        self.dlg.tbEscolherArquivo.setText(self.tr('Select file.'))
+        self.dlg.label_2.setText(self.tr('Add to Group:'))
+        self.dlg.lineEdit_Grupo.setToolTip(self.tr('If blank, the features will be imported into the "Avenza" group.'))
+        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expand All Features'))
+        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Check to have the created Group expanded.'))
+        self.dlg.checkBoxRotularNome.setText(self.tr('Label Features by Name'))
+        self.dlg.groupBox.setTitle(self.tr('Processing....'))
+        self.dlg.pushBtImportar.setText(self.tr('I&mport'))
+        self.dlg.setWindowTitle(self.tr('Import KML or KMZ File from Avenza'))
 
     def saveDialogPosition(self, result):
         """Este método será chamado quando o diálogo for fechado"""
@@ -192,25 +196,33 @@ class AvenzaKMZImporter:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+# TODO: Internacionalizar os nomes dos menus
+
         # Teste: Criação de uma toolbar
-        self.toolbar = self.iface.addToolBar('Avenza KML/KMZ Import Toolbar')
+        # self.toolbar = self.iface.addToolBar('Avenza KML/KMZ Import Toolbar')
+        self.toolbar = self.iface.addToolBar('Ferramentas de importação Avenza KML/KMZ')
         self.toolbar.setObjectName('AvenzaKMLKMZImportToolbar')
-        self.toolbar.setToolTip('Avenza KML/KMZ Import Toolbar')
+        # self.toolbar.setToolTip('Avenza KML/KMZ Import Toolbar')
+        self.toolbar.setToolTip('Ferramentas de importação Avenza KML/KMZ')
 
         # Ícone do KML/KMZ Import
         icon_path = ':/plugins/avenza_kmz_importer/icon.png'
-        self.kmlImport = QAction(QIcon(icon_path), 'Avenza KML/KMZ Import', self.iface.mainWindow())
+        self.kmlImport = QAction(QIcon(icon_path), self.tr('Avenza KML/KMZ Import'), self.iface.mainWindow())
+        # self.kmlImport = QAction(QIcon(icon_path), 'Importar Avenza KML/KMZ', self.iface.mainWindow())
         self.kmlImport.triggered.connect(self.run)
         self.toolbar.addAction(self.kmlImport)
-        self.iface.addPluginToMenu('&Avenza KML/KMZ Import Tools', self.kmlImport)
+        self.iface.addPluginToMenu(self.tr("&Avenza KML/KMZ Import Tools"), self.kmlImport)
+        # self.iface.addPluginToMenu(self.tr("Ferramentas de importação &Avenza KML/KMZ"), self.kmlImport)
 
         # Ícone do showAttributeTable      
         icon_path = ':/plugins/avenza_kmz_importer/tela1.png'
-        self.showTable = QAction(QIcon(icon_path), 'Show Attribute Table', self.iface.mainWindow())
+        # self.showTable = QAction(QIcon(icon_path), 'Show Attribute Table', self.iface.mainWindow())
+        self.showTable = QAction(QIcon(icon_path), self.tr('Show Attribute Table'), self.iface.mainWindow())
         self.showTable.triggered.connect(self.showAttributeTable)
         # self.showTable.setEnabled(False)
         self.toolbar.addAction(self.showTable)
-        self.iface.addPluginToMenu('&Avenza KML/KMZ Import Tools', self.showTable)
+        self.iface.addPluginToMenu(self.tr("&Avenza KML/KMZ Import Tools"), self.showTable)
+        # self.iface.addPluginToMenu(self.tr("Ferramentas de importação &Avenza KML/KMZ"), self.showTable)
 
         # will be set False in run()
         self.first_start = True
@@ -219,7 +231,8 @@ class AvenzaKMZImporter:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u"&Avenza Maps's KML/KMZ File Importer"),
+                self.tr("&Avenza Maps's KML/KMZ File Importer"),
+                # self.tr("Ferramentas de importação &Avenza KML/KMZ"),
                 action)
             self.iface.removeToolBarIcon(action)
 
@@ -296,8 +309,10 @@ class AvenzaKMZImporter:
         """
         self.cursor_wait()
 
-        filtro = self.tr(u"Arquivos KML/KMZ (*.kml *.kmz)")
-        kml_abrir = str(QFileDialog.getOpenFileName(caption=self.tr(u"Escolha o arquivo KML ou KMZ..."), directory=self.directory, filter=filtro)[0])
+        # filtro = self.tr("Arquivos KML/KMZ (*.kml *.kmz)")
+        filtro = self.tr("KML/KMZ Files (*.kml *.kmz)")
+        # kml_abrir = str(QFileDialog.getOpenFileName(caption=self.tr("Escolha o arquivo KML ou KMZ..."), directory=self.directory, filter=filtro)[0])
+        kml_abrir = str(QFileDialog.getOpenFileName(caption=self.tr("Select KML or KMZ file..."), directory=self.directory, filter=filtro)[0])
 
         # Se a kml_abrir <> Vazio
         if (kml_abrir != ""):
@@ -319,7 +334,8 @@ class AvenzaKMZImporter:
         """
         self.cursor_wait()
 
-        pasta_imagens = str(QFileDialog.getExistingDirectory(caption=self.tr(u"Escolha a pasta para salvar as imagens..."), directory=self.directory))
+        # pasta_imagens = str(QFileDialog.getExistingDirectory(caption=self.tr("Escolha a pasta para salvar as imagens..."), directory=self.directory))
+        pasta_imagens = str(QFileDialog.getExistingDirectory(caption=self.tr("Select folder to save images..."), directory=self.directory))
 
         # Se a pasta_imagens <> Vazio
         if (pasta_imagens != ""):
@@ -355,31 +371,33 @@ class AvenzaKMZImporter:
         # Parseando o arquivo `KML`:
         # Verificando se o arquivo é KML ou KMZ
         if self.arquivo_kml.lower().endswith('.kmz'):
-            zipfile_kmz =self.open_kmz(self, self.arquivo_kml) # TODO: AJEITANDO ISTO AQUI
+            zipfile_kmz =self.open_kmz(self.arquivo_kml) # TODO: AJEITANDO ISTO AQUI
 
             source_kml, name_kml = self.extract_kml_from_kmz(zipfile_kmz)
             # Verifica se existem imagens dentro da pasta 'images'
             if len([item.filename for item in zipfile_kmz.infolist() if item.filename.lower().startswith('images/')]) > 0:
                 retorno = self.extract_images_from_kmz(zipfile_kmz) 
                 if retorno is not None:
-                    self.add_log(self.tr(u'Erro ao extrair imagens do KMZ'), retorno)
+                    # self.add_log(self.tr('Erro ao extrair imagens do KMZ'), retorno)
+                    self.add_log(self.tr('Error extracting images from KMZ'), retorno)
                     self.cursor_arrow()
                     return
             zipfile_kmz = None
 
-            self.add_log(self.tr(u'Processando o arquivo KMZ'), self.arquivo_kml)
-            self.add_log(self.tr(u'Processando o arquivo KML interno'), name_kml)
+            # self.add_log(self.tr('Processando o arquivo KMZ'), self.arquivo_kml)
+            self.add_log(self.tr('Processing KMZ file'), self.arquivo_kml)
+            self.add_log(self.tr('Processing internal KML file'), name_kml)
             self.tree = etree.fromstring(source_kml)
         else:
-            self.add_log(self.tr(u'Processando o arquivo KML'), self.arquivo_kml)
+            self.add_log(self.tr('Processing KML file'), self.arquivo_kml)
             self.tree = etree.parse(self.arquivo_kml)
 
         self.process_simbologia(self.tree)
-        # self.add_log(self.tr(u'Simbologia'), self.simbologia)
+        # self.add_log(self.tr('Simbologia'), self.simbologia)
 
         self.process_schema(self.tree)
         # self.add_log('Schema', self.esquemas)
-        self.add_log(self.tr(u'Processando Camadas'), '-' * 30)
+        self.add_log(self.tr('Processing Layers'), '-' * 30)
         self.process_folders(self.tree)
         
         if self.node_group and self.node_group.findLayers()==[]:
@@ -550,7 +568,8 @@ class AvenzaKMZImporter:
                 return kmz_file
 
         except Exception as e:
-            self.add_log(f"{self.tr(u'Erro ao abrir o KMZ')} => {str(e)}\n")
+            # self.add_log(f"{self.tr('Erro ao abrir o KMZ')}, {str(e)}\n")
+            self.add_log(f"{self.tr('Error opening KMZ')}", f"{str(e)}\n")
         self.cursor_arrow()
 
     def extract_kml_from_kmz(self, kmz_file):
@@ -564,7 +583,8 @@ class AvenzaKMZImporter:
                         return source_kml, nome_arquivo
                         
         except Exception as e:
-            self.add_log(f"{self.tr(u'Erro ao extrair KML do KMZ')} => {str(e)}\n")
+            # self.add_log(f"{self.tr('Erro ao extrair KML do KMZ')}, {str(e)}\n")
+            self.add_log(f"{self.tr('Error extracting KML from KMZ')}", f"{str(e)}\n")
         self.cursor_arrow()
 
     def extract_images_from_kmz(self, kmz_file): # TODO: Finalizar este método
@@ -603,7 +623,7 @@ class AvenzaKMZImporter:
         #                         target.write(source.read())
 
         else: # Cancela a extração
-            return self.tr(u'Erro: Cancelado pelo usuário')
+            return self.tr('Error: Cancelled by user')
 
     def process_simbologia(self, tree):
         # Computando as Simbologias:
@@ -663,9 +683,9 @@ class AvenzaKMZImporter:
             # Adicionando um grupo para a Camada atual
             camada_atual = self.node_group.addGroup(camada_nome)
 
-            self.add_log(self.tr(u'Processando Camada'), camada_nome)
+            self.add_log(self.tr('Processing Layer'), camada_nome)
             points, lines, polygons = self.process_placemarks(camada_nome, camada)
-            self.add_log(self.tr(u'Feições encontradas'), f'{self.tr(u"Pontos")}:{len(points)}, {self.tr(u"Linhas")}:{len(lines)}, {self.tr(u"Polígonos")}:{len(polygons)}')
+            self.add_log(self.tr('Features found'), f'{self.tr("Points")}:{len(points)}, {self.tr("Lines")}:{len(lines)}, {self.tr("Polygons")}:{len(polygons)}')
 
             if not (points==[] and lines==[] and polygons==[]):
                 # Cria DataFrames pandas para cada tipo de feição da camada atual
@@ -675,21 +695,21 @@ class AvenzaKMZImporter:
                         self.add_df_to_qgis(df_points, 'Points', self.simbologia, 'Point', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
-                        self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Camada atual")}: {camada_atual}.<br>{self.tr(u"Colunas")}: {self.point_cols}<br>{self.tr(u"Points")}: {str(points)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                        self.add_log(self.tr('Error processing geometry'), f'{self.tr("Current layer")}: {camada_atual}.<br>{self.tr("Columns")}: {self.point_cols}<br>{self.tr("Points")}: {str(points)} <br>{self.tr("Error")}: <font color="#e92121">{str(e)}</font>')
                 if lines!=[]:
                     try:
                         df_lines = pd.DataFrame(lines, columns=['Name', 'geometry', 'Time', 'Style', 'Notes', 'Line Color', 'Line Width', 'Line Opacity'])    
                         self.add_df_to_qgis(df_lines, 'Lines', self.simbologia, 'LineString', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
-                        self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Camada atual")}: {camada_atual}.<br>{self.tr(u"Colunas")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity"]}<br>{self.tr(u"Lines")}: {str(lines)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                        self.add_log(self.tr('Error processing geometry'), f'{self.tr("Current layer")}: {camada_atual}.<br>{self.tr("Columns")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity"]}<br>{self.tr("Lines")}: {str(lines)} <br>{self.tr("Error")}: <font color="#e92121">{str(e)}</font>')
                 if polygons!=[]:
                     try:
                         df_polygons = pd.DataFrame(polygons, columns=['Name', 'geometry', 'Time', 'Style', 'Notes', 'Line Color', 'Line Width', 'Line Opacity', 'Polygon Color', 'Polygon Opacity'])
                         self.add_df_to_qgis(df_polygons, 'Polygons', self.simbologia, 'Polygon', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
-                        self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Camada atual")}: {camada_atual}.<br>{self.tr(u"Colunas")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity", "Polygon Color", "Polygon Opacity"]}<br>{self.tr(u"Polygons")}: {str(polygons)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                        self.add_log(self.tr('Error processing geometry'), f'{self.tr("Current layer")}: {camada_atual}.<br>{self.tr("Columns")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity", "Polygon Color", "Polygon Opacity"]}<br>{self.tr("Polygons")}: {str(polygons)} <br>{self.tr("Error")}: <font color="#e92121">{str(e)}</font>')
 
             # Expande ou não o conteúdo do grupo
             self.setExpanded(self.dlg.checkBoxExpandirFeicoes.isChecked())
@@ -698,7 +718,7 @@ class AvenzaKMZImporter:
             #     self.setLabeling()
 
         if len(tree.xpath('//kml:Folder', namespaces={'kml': self.t[1:-1]}))==0:
-            self.add_log(self.tr(u'Erro'), self.tr(u'Não foi encontrada nenhuma camada para processar.'))
+            self.add_log(self.tr('Error'), self.tr('No layers found to process.'))
     
     def process_placemarks(self, camada, tree):
         # Listas para armazenar feições por tipo
@@ -716,7 +736,7 @@ class AvenzaKMZImporter:
             elif placemark.find(f'{self.tx}Track') is not None:
                 feature_type = 'Track'
             else:
-                self.add_log(self.tr(u'Não foi possível importar'), f"{self.tr(u'De')}: [{camada}].<br>{self.tr(u'Feição')}: {placemark.find(f'{self.t}name').text}, {self.tr(u'por não ser do tipo')} Point, LineString, Polygon ou Track.")
+                self.add_log(self.tr('Unable to import'), f"{self.tr('From')}: [{camada}].<br>{self.tr('Feature')}: {placemark.find(f'{self.t}name').text}, {self.tr('because it is not of type Point, LineString, Polygon or Track.')}")
                 continue # Ignorar outros tipos de feição não suportados
             # Notes
             notes = {}
@@ -771,13 +791,13 @@ class AvenzaKMZImporter:
                     geometry = Polygon(coordinates)
                     polygons.append((feature_name, geometry, time, urlstyle, notes, cor_linha, espessura_linha, opacidade_linha, cor_fundo, opacidade_fundo))
                 except Exception as e:
-                    self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Feição")}: {feature_name}.<br>{self.tr(u"Coordenadas")}: {str(coordinates)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                    self.add_log(self.tr('Error processing geometry'), f'{self.tr("Feature")}: {feature_name}.<br>{self.tr("Coordinates")}: {str(coordinates)} <br>{self.tr("Error")}: <font color="#e92121">{str(e)}</font>')
             elif feature_type == 'LineString':
                 try:
                     geometry = LineString(coordinates)
                     lines.append((feature_name, geometry, time, urlstyle, notes, cor_linha, espessura_linha, opacidade_linha))   
                 except Exception as e:
-                    self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Feição")}: {feature_name}.<br>{self.tr(u"Coordenadas")}: {str(coordinates)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                    self.add_log(self.tr('Error processing geometry'), f'{self.tr("Feature")}: {feature_name}.<br>{self.tr("Coordinates")}: {str(coordinates)} <br>{self.tr("Error")}: <font color="#e92121">{str(e)}</font>')
             elif feature_type == 'Track':
                 # Deve fazer 02 procedimentos: Point e LineString
                 point_geometry, line_geometry, array_data = self.extract_track_data(placemark)
