@@ -31,8 +31,8 @@
     </message>
     <message>
         <location filename="../avenza_kmz_importer.py" line="153"/>
-        <source>Select file.</source>
-        <translation>Escolher arquivo.</translation>
+        <source>Select file</source>
+        <translation>Escolher arquivo</translation>
     </message>
     <message>
         <location filename="../avenza_kmz_importer.py" line="154"/>
