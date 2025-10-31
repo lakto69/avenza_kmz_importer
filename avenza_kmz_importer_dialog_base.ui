@@ -38,7 +38,7 @@
         <string>Use the button next to it to choose the file to add to the project.</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::InputMethodHint::ImhNone</set>
+        <set>Qt::ImhNone</set>
        </property>
        <property name="inputMask">
         <string/>
@@ -60,7 +60,7 @@
         <string>Click here to choose the file to be added to the project.</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::InputMethodHint::ImhNone</set>
+        <set>Qt::ImhNone</set>
        </property>
        <property name="text">
         <string>Select file</string>
@@ -69,13 +69,13 @@
         <bool>false</bool>
        </property>
        <property name="popupMode">
-        <enum>QToolButton::ToolButtonPopupMode::DelayedPopup</enum>
+        <enum>QToolButton::DelayedPopup</enum>
        </property>
        <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
+        <enum>Qt::ToolButtonIconOnly</enum>
        </property>
        <property name="arrowType">
-        <enum>Qt::ArrowType::NoArrow</enum>
+        <enum>Qt::NoArrow</enum>
        </property>
       </widget>
      </item>
@@ -99,7 +99,7 @@
         <string>If blank, the features will be imported into the &quot;Avenza&quot; group</string>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::InputMethodHint::ImhNone</set>
+        <set>Qt::ImhNone</set>
        </property>
        <property name="inputMask">
         <string/>
@@ -125,7 +125,7 @@
         <string>Check to have the created Group expanded or </string>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LayoutDirection::RightToLeft</enum>
+        <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
         <string>Expand All Features</string>
@@ -138,7 +138,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -154,7 +154,7 @@
         <string/>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LayoutDirection::RightToLeft</enum>
+        <enum>Qt::RightToLeft</enum>
        </property>
        <property name="text">
         <string>Label Features by Name</string>
@@ -206,7 +206,7 @@
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -228,16 +228,16 @@
         </sizepolicy>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LayoutDirection::LeftToRight</enum>
+        <enum>Qt::LeftToRight</enum>
        </property>
        <property name="inputMethodHints">
-        <set>Qt::InputMethodHint::ImhNone</set>
+        <set>Qt::ImhNone</set>
        </property>
        <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
+        <enum>Qt::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::StandardButton::Close</set>
+        <set>QDialogButtonBox::Close</set>
        </property>
        <property name="centerButtons">
         <bool>true</bool>

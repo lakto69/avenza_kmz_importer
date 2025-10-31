@@ -150,7 +150,7 @@ class AvenzaKMZImporter:
         self.dlg.lineEdit_KML.setToolTip(self.tr('Use the button next to it to select the file to add to the project.'))
         self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use the button next to it to select the file...'))
         self.dlg.tbEscolherArquivo.setToolTip(self.tr('Click here to select the file to be added to the project.'))
-        self.dlg.tbEscolherArquivo.setText(self.tr('Select file.'))
+        self.dlg.tbEscolherArquivo.setText(self.tr('Select file'))
         self.dlg.label_2.setText(self.tr('Add to Group:'))
         self.dlg.lineEdit_Grupo.setToolTip(self.tr('If blank, the features will be imported into the "Avenza" group.'))
         self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expand All Features'))
