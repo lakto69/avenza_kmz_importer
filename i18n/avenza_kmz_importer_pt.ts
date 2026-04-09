@@ -9,68 +9,68 @@
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="134" />
-            <source>Arquivo KML ou KMZ:</source>
+            <source>KML or KMZ file:</source>
             <translation>Arquivo KML ou KMZ:</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="135" />
-            <source>Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.</source>
-            <translation>Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.</translation>
+            <source>Use the button next to it to select the file to be added to the project.</source>
+            <translation>Use o botão próximo a ele para selecionar o arquivo a ser adicionado ao projeto.</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="136" />
-            <source>Use o botão ao lado para escolher o arquivo...</source>
-            <translation>Use o botão ao lado para escolher o arquivo...</translation>
+            <source>Use the button next to it to select the file...</source>
+            <translation>Use o botão ao lado para selecionar o arquivo...</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="137" />
-            <source>Clique aqui para escolher o arquivo a ser adicionado no projeto.</source>
-            <translation>Clique aqui para escolher o arquivo a ser adicionado no projeto.</translation>
+            <source>Click here to select the file to be added to the project..</source>
+            <translation>Clique aqui para selecionar o arquivo a ser adicionado ao projeto.</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="138" />
-            <source>Escolher arquivo.</source>
-            <translation>Escolher arquivo.</translation>
+            <source>Select file.</source>
+            <translation>Selecione o arquivo.</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="139" />
-            <source>Adicionar ao Grupo:</source>
-            <translation>Adicionar ao Grupo:</translation>
+            <source>Add to Group:</source>
+            <translation>Adicionar ao grupo:</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="140" />
-            <source>Caso esteja em branco, as feições serão importadas para o grupo "Avenza".</source>
-            <translation>Caso esteja em branco, as feições serão importadas para o grupo "Avenza".</translation>
+            <source>If left blank, the features will be imported to the "Avenza" group.</source>
+            <translation>Se deixado em branco, as feições serão importadas para o grupo “Avenza”.</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="141" />
-            <source>Expandir Todas as Feições</source>
-            <translation>Expandir Todas as Feições</translation>
+            <source>Expand All Features</source>
+            <translation>Expanda todos os recursos</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="142" />
-            <source>Marque para que o Grupo criado seja expandido.</source>
-            <translation>Marque para que o Grupo criado seja expandido.</translation>
+            <source>Check to expand the created group.</source>
+            <translation>Marque para expandir o grupo criado.</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="143" />
-            <source>Rotular Feições Pelos Nomes</source>
-            <translation>Rotular Feições Pelos Nomes</translation>
+            <source>Label Features by Name</source>
+            <translation>Rotular recursos por nome</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="144" />
-            <source>Processamento....</source>
+            <source>Processing....</source>
             <translation>Processamento....</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="145" />
-            <source>I&amp;mportar</source>
-            <translation>Eu&amp;importo</translation>
+            <source>Im&amp;porting</source>
+            <translation>Im&amp;portar</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="146" />
-            <source>Importar Arquivo KML ou KMZ do Avenza</source>
-            <translation>Importar Arquivo KML ou KMZ do Avenza</translation>
+            <source>Import KML or KMZ file from Avenza</source>
+            <translation>Importe arquivo KML ou KMZ do Avenza</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer.py" line="260" />
@@ -141,89 +141,84 @@
     <context>
         <name>AvenzaKMZImporterDialogBase</name>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="17" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="17" />
             <source>Importar Arquivo KML ou KMZ do Avenza</source>
             <translation>Importar Arquivo KML ou KMZ do Avenza</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="25" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="25" />
             <source>Arquivo KML ou KMZ:</source>
             <translation>Arquivo KML ou KMZ:</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="35" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="35" />
             <source>Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.</source>
             <translation>Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="47" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="47" />
             <source>Use o botão ao lado para escolher o arquivo...</source>
             <translation>Use o botão ao lado para escolher o arquivo...</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="57" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="57" />
             <source>Clique aqui para escolher o arquivo a ser adicionado no projeto.</source>
             <translation>Clique aqui para escolher o arquivo a ser adicionado no projeto.</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="63" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="63" />
             <source>Escolher arquivo</source>
             <translation>Escolher arquivo</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="86" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="86" />
             <source>Adicionar ao Grupo:</source>
             <translation>Adicionar ao Grupo:</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="96" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="96" />
             <source>Caso esteja em branco, as feições serão importadas para o grupo "Avenza"</source>
             <translation>Caso esteja em branco, as feições serão importadas para o grupo "Avenza"</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="111" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="111" />
             <source>Avenza</source>
             <translation>Avenza</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="122" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="122" />
             <source>Marque para que o Grupo criado seja expandido ou</source>
             <translation>Marque para que o Grupo criado seja expandido ou</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="128" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="128" />
             <source>Expandir Todas as Feições</source>
             <translation>Expandir Todas as Feições</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="157" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="157" />
             <source>Rotular Feições Pelos Nomes</source>
             <translation>Rotular Feições Pelos Nomes</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="169" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="169" />
             <source>Processamento</source>
             <translation>Processamento</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="178" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="178" />
             <source>Log do processamento.</source>
             <translation>Log do processamento.</translation>
             </message>
         <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="181" />
+            <location filename="../avenza_kmz_importer_dialog_base.ui" line="181" />
             <source>Log:</source>
             <translation>Registro:</translation>
             </message>
         <message>
             <location filename="../avenza_kmz_importer_dialog_base.ui" line="199" />
-            <source>To I&amp;mport</source>
-            <translation>Para &amp;importar</translation>
-            </message>
-        <message>
-            <location filename="../avenza_kmz_importer_dialog_base_qt6.ui" line="199" />
-            <source>I&amp;mportar</source>
-            <translation>Eu&amp;importo</translation>
+            <source>I&amp;mporting</source>
+            <translation>&amp;Importando</translation>
             </message>
         </context>
     <context>

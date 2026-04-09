@@ -131,19 +131,19 @@ class AvenzaKMZImporter:
         self.dlg.finished.connect(self.saveDialogPosition)
 
         # Internacionalizando o app:
-        self.dlg.label.setText(self.tr('Arquivo KML ou KMZ:'))
-        self.dlg.lineEdit_KML.setToolTip(self.tr('Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.'))
-        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use o botão ao lado para escolher o arquivo...'))
-        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Clique aqui para escolher o arquivo a ser adicionado no projeto.'))
-        self.dlg.tbEscolherArquivo.setText(self.tr('Escolher arquivo.'))
-        self.dlg.label_2.setText(self.tr('Adicionar ao Grupo:'))
-        self.dlg.lineEdit_Grupo.setToolTip(self.tr('Caso esteja em branco, as feições serão importadas para o grupo "Avenza".'))
-        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expandir Todas as Feições'))
-        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Marque para que o Grupo criado seja expandido.'))
-        self.dlg.checkBoxRotularNome.setText(self.tr('Rotular Feições Pelos Nomes'))
-        self.dlg.groupBox.setTitle(self.tr('Processamento....'))
-        self.dlg.pushBtImportar.setText(self.tr('I&mportar'))
-        self.dlg.setWindowTitle(self.tr('Importar Arquivo KML ou KMZ do Avenza'))
+        self.dlg.label.setText(self.tr('KML or KMZ file:'))
+        self.dlg.lineEdit_KML.setToolTip(self.tr('Use the button next to it to select the file to be added to the project.'))
+        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use the button next to it to select the file...'))
+        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Click here to select the file to be added to the project..'))
+        self.dlg.tbEscolherArquivo.setText(self.tr('Select file.'))
+        self.dlg.label_2.setText(self.tr('Add to Group:'))
+        self.dlg.lineEdit_Grupo.setToolTip(self.tr('If left blank, the features will be imported to the "Avenza" group.'))
+        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expand All Features'))
+        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Check to expand the created group.'))
+        self.dlg.checkBoxRotularNome.setText(self.tr('Label Features by Name'))
+        self.dlg.groupBox.setTitle(self.tr('Processing....'))
+        self.dlg.pushBtImportar.setText(self.tr('Im&porting'))
+        self.dlg.setWindowTitle(self.tr('Import KML or KMZ file from Avenza'))
 
     def saveDialogPosition(self, result):
         """Este método será chamado quando o diálogo for fechado"""
