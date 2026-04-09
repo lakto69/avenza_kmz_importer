@@ -5,6 +5,7 @@
 [general]
 name=Avenza Maps's KML/KMZ File Importer
 qgisMinimumVersion=3.0
+qgisMaximumVersion=4.99
 description=This plugin import features from KML e KMZ files from Avenza Maps.
 description[pt_br]=Este plugin importa feições de arquivos KML e KMZ criados pelo Avenza Maps.
 version=1.4
@@ -43,7 +44,7 @@ tags=python, import, kmz, kml, point, polygon, line, avenza
 homepage=https://github.com/lakto69/avenza_kmz_importer
 icon=icon.ico
 # experimental flag
-experimental=True
+experimental=False
 supportsQt6=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
