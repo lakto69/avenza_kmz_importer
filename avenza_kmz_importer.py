@@ -131,19 +131,19 @@ class AvenzaKMZImporter:
         self.dlg.finished.connect(self.saveDialogPosition)
 
         # Internacionalizando o app:
-        self.dlg.label.setText(self.tr('Arquivo KML ou KMZ:'))
-        self.dlg.lineEdit_KML.setToolTip(self.tr('Use o botão ao lado para escolher o arquivo a ser adicionado no projeto.'))
-        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use o botão ao lado para escolher o arquivo...'))
-        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Clique aqui para escolher o arquivo a ser adicionado no projeto.'))
-        self.dlg.tbEscolherArquivo.setText(self.tr('Escolher arquivo.'))
-        self.dlg.label_2.setText(self.tr('Adicionar ao Grupo:'))
-        self.dlg.lineEdit_Grupo.setToolTip(self.tr('Caso esteja em branco, as feições serão importadas para o grupo "Avenza".'))
-        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expandir Todas as Feições'))
-        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Marque para que o Grupo criado seja expandido.'))
-        self.dlg.checkBoxRotularNome.setText(self.tr('Rotular Feições Pelos Nomes'))
-        self.dlg.groupBox.setTitle(self.tr('Processamento....'))
-        self.dlg.pushBtImportar.setText(self.tr('I&mportar'))
-        self.dlg.setWindowTitle(self.tr('Importar Arquivo KML ou KMZ do Avenza'))
+        self.dlg.label.setText(self.tr('KML or KMZ file:'))
+        self.dlg.lineEdit_KML.setToolTip(self.tr('Use the button next to it to select the file to be added to the project.'))
+        self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use the button next to it to select the file...'))
+        self.dlg.tbEscolherArquivo.setToolTip(self.tr('Click here to select the file to be added to the project..'))
+        self.dlg.tbEscolherArquivo.setText(self.tr('Select file.'))
+        self.dlg.label_2.setText(self.tr('Add to Group:'))
+        self.dlg.lineEdit_Grupo.setToolTip(self.tr('If left blank, the features will be imported to the "Avenza" group.'))
+        self.dlg.checkBoxExpandirFeicoes.setText(self.tr('Expand All Features'))
+        self.dlg.checkBoxExpandirFeicoes.setToolTip(self.tr('Check to expand the created group.'))
+        self.dlg.checkBoxRotularNome.setText(self.tr('Label Features by Name'))
+        self.dlg.groupBox.setTitle(self.tr('Processing....'))
+        self.dlg.pushBtImportar.setText(self.tr('Im&porting'))
+        self.dlg.setWindowTitle(self.tr('Import KML or KMZ file from Avenza'))
 
     def saveDialogPosition(self, result):
         """Este método será chamado quando o diálogo for fechado"""
@@ -343,11 +343,11 @@ class AvenzaKMZImporter:
         if self.arquivo_kml.lower().endswith('.kmz'):
             source_kml, name_kml = self.extract_kml_from_kmz(self.arquivo_kml)
             # self.add_log('Processando o arquivo', name_kml)
-            self.add_log('Processando o arquivo KMZ', self.arquivo_kml)
-            self.add_log('Processando o arquivo KML interno', name_kml)            
+            self.add_log(self.tr('Processing the KMZ file'), self.arquivo_kml)
+            self.add_log(self.tr('Processing the internal KML file:'), name_kml)
             self.tree = etree.fromstring(source_kml)
         else:
-            self.add_log('Processando o arquivo KML', self.arquivo_kml)
+            self.add_log(self.tr('Processing the KML file'), self.arquivo_kml)
             self.tree = etree.parse(self.arquivo_kml)
 
         self.process_simbologia(self.tree)
@@ -355,7 +355,7 @@ class AvenzaKMZImporter:
 
         self.process_schema(self.tree)
         # self.add_log('Schema', self.esquemas)
-        self.add_log(self.tr(u'Processando Camadas'), '-' * 30)
+        self.add_log(self.tr(u'Processing Layers'), '-' * 30)
         self.process_folders(self.tree)
         
         if self.node_group and self.node_group.findLayers()==[]:
@@ -530,7 +530,7 @@ class AvenzaKMZImporter:
                             return source_kml, nome_arquivo
                         
         except Exception as e:
-            self.add_log(f"{self.tr(u'Erro ao extrair KML do KMZ')} => {str(e)}\n")
+            self.add_log(f"{self.tr(u'Error extracting KML from KMZ')} => {str(e)}\n")
         self.cursor_arrow()
 
     def process_simbologia(self, tree):
@@ -591,9 +591,9 @@ class AvenzaKMZImporter:
             # Adicionando um grupo para a Camada atual
             camada_atual = self.node_group.addGroup(camada_nome)
 
-            self.add_log(self.tr(u'Processando Camada'), camada_nome)
+            self.add_log(self.tr(u'Processing Layer'), camada_nome)
             points, lines, polygons = self.process_placemarks(camada_nome, camada)
-            self.add_log(self.tr(u'Feições encontradas'), f'{self.tr(u"Pontos")}:{len(points)}, {self.tr(u"Linhas")}:{len(lines)}, {self.tr(u"Polígonos")}:{len(polygons)}')
+            self.add_log(self.tr(u'Features found'), f'{self.tr(u"Points")}:{len(points)}, {self.tr(u"Lines")}:{len(lines)}, {self.tr(u"Polygons")}:{len(polygons)}')
 
             if not (points==[] and lines==[] and polygons==[]):
                 # Cria DataFrames pandas para cada tipo de feição da camada atual
@@ -603,21 +603,21 @@ class AvenzaKMZImporter:
                         self.add_df_to_qgis(df_points, 'Points', self.simbologia, 'Point', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
-                        self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Camada atual")}: {camada_atual}.<br>{self.tr(u"Colunas")}: {self.point_cols}<br>{self.tr(u"Points")}: {str(points)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                        self.add_log(self.tr(u'Error processing geometry.'), f'{self.tr(u"Current layer")}: {camada_atual}.<br>{self.tr(u"Columns")}: {self.point_cols}<br>{self.tr(u"Points")}: {str(points)} <br>{self.tr(u"Error")}: <font color="#e92121">{str(e)}</font>')
                 if lines!=[]:
                     try:
                         df_lines = pd.DataFrame(lines, columns=['Name', 'geometry', 'Time', 'Style', 'Notes', 'Line Color', 'Line Width', 'Line Opacity'])    
                         self.add_df_to_qgis(df_lines, 'Lines', self.simbologia, 'LineString', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
-                        self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Camada atual")}: {camada_atual}.<br>{self.tr(u"Colunas")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity"]}<br>{self.tr(u"Lines")}: {str(lines)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                        self.add_log(self.tr(u'Error processing geometry.'), f'{self.tr(u"Current layer")}: {camada_atual}.<br>{self.tr(u"Columns")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity"]}<br>{self.tr(u"Lines")}: {str(lines)} <br>{self.tr(u"Error")}: <font color="#e92121">{str(e)}</font>')
                 if polygons!=[]:
                     try:
                         df_polygons = pd.DataFrame(polygons, columns=['Name', 'geometry', 'Time', 'Style', 'Notes', 'Line Color', 'Line Width', 'Line Opacity', 'Polygon Color', 'Polygon Opacity'])
                         self.add_df_to_qgis(df_polygons, 'Polygons', self.simbologia, 'Polygon', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
-                        self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Camada atual")}: {camada_atual}.<br>{self.tr(u"Colunas")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity", "Polygon Color", "Polygon Opacity"]}<br>{self.tr(u"Polygons")}: {str(polygons)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                        self.add_log(self.tr(u'Error processing geometry.'), f'{self.tr(u"Current layer")}: {camada_atual}.<br>{self.tr(u"Columns")}: {["Name", "geometry", "Time", "Style", "Notes", "Line Color", "Line Width", "Line Opacity", "Polygon Color", "Polygon Opacity"]}<br>{self.tr(u"Polygons")}: {str(polygons)} <br>{self.tr(u"Error")}: <font color="#e92121">{str(e)}</font>')
 
             # Expande ou não o conteúdo do grupo
             self.setExpanded(self.dlg.checkBoxExpandirFeicoes.isChecked())
@@ -626,8 +626,7 @@ class AvenzaKMZImporter:
             #     self.setLabeling()
 
         if len(tree.xpath('//kml:Folder', namespaces={'kml': self.t[1:-1]}))==0:
-            self.add_log(self.tr(u'Erro'), self.tr(u'Não foi encontrada nenhuma camada para processar.'))
-    
+            self.add_log(self.tr(u'Error'), self.tr(u'No layer found to process.'))
     def process_placemarks(self, camada, tree):
         # Listas para armazenar feições por tipo
         points = []
@@ -644,7 +643,7 @@ class AvenzaKMZImporter:
             elif placemark.find(f'{self.tx}Track') is not None:
                 feature_type = 'Track'
             else:
-                self.add_log(self.tr(u'Não foi possível importar'), f"{self.tr(u'De')}: [{camada}].<br>{self.tr(u'Feição')}: {placemark.find(f'{self.t}name').text}, {self.tr(u'por não ser do tipo')} Point, LineString, Polygon ou Track.")
+                self.add_log(self.tr(u'It was not possible to import.'), f"{self.tr(u'From')}: [{camada}].<br>{self.tr(u'Feature')}: {placemark.find(f'{self.t}name').text}, {self.tr(u'because it is not of type')} Point, LineString, Polygon or Track.")
                 continue # Ignorar outros tipos de feição não suportados
             # Notes
             notes = {}
@@ -699,13 +698,13 @@ class AvenzaKMZImporter:
                     geometry = Polygon(coordinates)
                     polygons.append((feature_name, geometry, time, urlstyle, notes, cor_linha, espessura_linha, opacidade_linha, cor_fundo, opacidade_fundo))
                 except Exception as e:
-                    self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Feição")}: {feature_name}.<br>{self.tr(u"Coordenadas")}: {str(coordinates)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                    self.add_log(self.tr(u'Error processing geometry.'), f'{self.tr(u"Feature")}: {feature_name}.<br>{self.tr(u"Coordinates")}: {str(coordinates)} <br>{self.tr(u"Error")}: <font color="#e92121">{str(e)}</font>')
             elif feature_type == 'LineString':
                 try:
                     geometry = LineString(coordinates)
                     lines.append((feature_name, geometry, time, urlstyle, notes, cor_linha, espessura_linha, opacidade_linha))   
                 except Exception as e:
-                    self.add_log(self.tr(u'Erro ao processar geometria'), f'{self.tr(u"Feição")}: {feature_name}.<br>{self.tr(u"Coordenadas")}: {str(coordinates)} <br>{self.tr(u"Erro")}: <font color="#e92121">{str(e)}</font>')
+                    self.add_log(self.tr(u'Error processing geometry.'), f'{self.tr(u"Feature")}: {feature_name}.<br>{self.tr(u"Coordinates")}: {str(coordinates)} <br>{self.tr(u"Error")}: <font color="#e92121">{str(e)}</font>')
             elif feature_type == 'Track':
                 # Deve fazer 02 procedimentos: Point e LineString
                 point_geometry, line_geometry, array_data = self.extract_track_data(placemark)
