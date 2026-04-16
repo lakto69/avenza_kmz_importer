@@ -41,6 +41,10 @@ from .resources import *
 # Import the code for the dialog
 from .avenza_kmz_importer_dialog import AvenzaKMZImporterDialog
 
+# Chama gpkg_1.py para trabalhar em testes
+from .gpkg_1 import *
+
+
 class AvenzaKMZImporter:
     """QGIS Plugin Implementation."""
 
