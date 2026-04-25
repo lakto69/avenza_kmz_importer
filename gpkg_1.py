@@ -318,14 +318,14 @@ def extract_styleurl(pm, ns):
 
 # ---------------- Aplicação de simbologia ----------------
 
-def apply_layer_symbology(layer, gtype, style_info, temp_img_dir):
+def apply_layer_symbology(layer, gtype, style_info, img_dir):
     icons_dir = os.path.join(os.path.dirname(__file__).replace('/','\\'), 'svg') # Diretório padrão de ícones SVG
     if gtype in ("Point", "TrackPoint"):
         symbol = QgsMarkerSymbol.createSimple({})
         if style_info and style_info.get('icon_href'):
             # href = style_info['icon_href']
             href = style_info['icon_href']
-            # icon_path = os.path.join(temp_img_dir, os.path.basename(href))
+            # icon_path = os.path.join(img_dir, os.path.basename(href))
             icon_path = os.path.join(icons_dir, href + '.svg')  # Usa o diretório de ícones padrão
             if os.path.exists(icon_path):
                 raster_layer = QgsRasterMarkerSymbolLayer(icon_path)
@@ -418,6 +418,20 @@ class Zip_Kmz:
         self.schema = {}
         # self.folders = self.process_folders()
 
+    def save_imgs_to_path(self):
+        # Salva as imagens do kmz em um diretório temporário
+        # img_dir = os.path.join(os.path.splitext(self.arquivo_kmz)[0].replace('/','\\'), 'temp_images')
+        img_dir = os.path.splitext(self.arquivo_kmz)[0].replace('/','\\') + '_images'
+        if not os.path.exists(img_dir):
+            os.makedirs(img_dir)
+        else:
+            print(f"Diretório de imagens já existe: {img_dir}")
+
+        for file in self.zip_kmz.namelist():
+            if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+                self.zip_kmz.extract(file, img_dir)
+        return img_dir
+
     def process_folders(self):
         # Processa todos os folders
         folders = []
@@ -481,7 +495,7 @@ class Zip_Kmz:
         return tipo, handle_geometry_extraction(tipo, pai_el)
         # return tipo, handle_geometry_extraction(tipo, coord, gx)
 
-    def process_simbologia(self):
+    def process_simbologia(self): # Igual ao process_simbologia da classe AvenzaKMZImporter
         # Computando as Simbologias:
         self.simbologia = {}
         # for estilo in estilos:
@@ -508,7 +522,7 @@ class Zip_Kmz:
 
             self.simbologia[estilo.attrib['id']] = parameters
 
-    def process_schema(self):
+    def process_schema(self): # Igual ao process_schema da classe AvenzaKMZImporter
         # Computando os schema de Tracks:
         # for esquema in schema:
         for esquema in self.root.findall(".//kml:Schema", ns):
@@ -528,417 +542,6 @@ class Zip_Kmz:
         if self.schema.get('track_schema')!=None:
             self.point_cols = self.point_cols + ['when', 'angles'] + list(self.schema['track_schema'].keys())
 
-
-    def save_images_to_gpkg(self):
-        gpkg_file = self.arquivo_kmz + "_.gpkg"
-        gpkg_file = r"C:\TI\Qgis\KML Testes\teste_.gpkg"
-
-        conn = sqlite3.connect(gpkg_file)
-        cur = conn.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS images (id INTEGER PRIMARY KEY, name TEXT, data BLOB)")
-        for nome_arquivo in self.zip_kmz.namelist():
-            if nome_arquivo.lower().startswith('images/'):
-                with self.zip_kmz.open(nome_arquivo) as imagem_file:
-                    blob = imagem_file.read()
-                    cur.execute("INSERT INTO images (name, data) VALUES (?, ?)", (os.path.basename(nome_arquivo), blob))
-        conn.commit()
-        conn.close()
-
-    def save_styles_to_gpkg(self, styles):
-        gpkg_file = self.arquivo_kmz + "_.gpkg"
-        gpkg_file = r"C:\TI\Qgis\KML Testes\teste_.gpkg"
-
-        conn = sqlite3.connect(gpkg_file)
-        cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS styles (
-                id INTEGER PRIMARY KEY,
-                style_id TEXT,
-                icon_href TEXT,
-                line_width REAL,
-                line_opacity REAL,
-                line_color_hex TEXT,
-                poly_color_hex TEXT,
-                poly_opacity REAL
-            )
-        """)
-        for style in styles:
-            cur.execute("""
-                INSERT INTO styles (style_id, icon_href, line_width, line_opacity, line_color_hex, poly_color_hex, poly_opacity)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                style['id'],
-                style['icon_href'],
-                style['line_width'],
-                style['line_opacity'],
-                style['line_color_hex'],
-                style['poly_color_hex'],
-                style['poly_opacity']
-            ))
-        conn.commit()
-        conn.close()
-    def salvar_em_gpkg_2(self):
-        # self.save_images() # Salva as imagens na tabela kmz_images
-        # self.save_geoms() # Salva as geometrias em camadas organizadas por Folder e tipo de geometria, aplicando simbologia e guardando atributos de estilo
-        # self.save_simbologia()
-
-        folder_geom = {}
-        # first_layer = True # Pra ver se acrescenta ou cria novo gpkg
-        for folder_name, types in folder_geom.items(): # Loop por folders
-            for gtype, feats in types.items(): # Loop por tipos de geometria
-                if not feats:
-                    continue
-
-                if gtype in ("Point", "TrackPoint"):
-                    uri = "Point?crs=EPSG:4326"
-                elif gtype in ("LineString", "TrackLine"):
-                    uri = "LineString?crs=EPSG:4326"
-                elif gtype == "Polygon":
-                    uri = "Polygon?crs=EPSG:4326"
-                else:
-                    continue
-
-                layer_name = sanitize_layer_name(f"{folder_name}_{gtype.lower()}")
-                layer = QgsVectorLayer(uri, layer_name, "memory")
-                pr = layer.dataProvider()
-                pr.addAttributes([QgsField("name", QVariant.String)])
-                layer.updateFields()
-
-                extra_fields = set()
-                needs_photos = False
-                style_fields_present = set()
-                for _, _, attrs_map, photos, _ in feats: # feats:(name, geom, attrs2(=attrs_placemark), photos2, stinfo)
-                    for k in attrs_map.keys():
-                        # Addiciona apenas campos que ainda não existem na camada, sem repetir
-                        if layer.fields().indexOf(k) == -1 and k not in extra_fields:
-                            extra_fields.add(k)
-                    if photos:
-                        needs_photos = True
-
-                if extra_fields: # Adiciona campos extras em ordem alfabética
-                    pr.addAttributes([QgsField(k, QVariant.String) for k in sorted(extra_fields)])
-                if needs_photos and layer.fields().indexOf("pdfmaps_photos") == -1:
-                    pr.addAttributes([QgsField("pdfmaps_photos", QVariant.String)]) # Adiciona campo de fotos se necessário
-                store_style_attributes_in_layer(layer, style_fields_present, pr) # TODO: Verificar necessidade disso
-                layer.updateFields()
-
-                qgis_feats = []
-                style_info_sample = None
-                for name, geom, attrs_map, photos, stinfo in feats: # ! stinfo é pra ser um dic!
-                    if geom is None or geom.isEmpty(): # ! Possível inconsistência do KML?
-                        continue
-                    f = QgsFeature(layer.fields())
-                    f.setGeometry(geom)
-                    f.setAttribute(layer.fields().indexOf("name"), name)
-                    for k, v in attrs_map.items(): # Guarda os valores de cada campo extra, se o campo existir
-                        idx = layer.fields().indexOf(k)
-                        if idx != -1:
-                            f.setAttribute(idx, v)
-                    if photos:
-                        idx_photos = layer.fields().indexOf("pdfmaps_photos")
-                        if idx_photos != -1:
-                            f.setAttribute(idx_photos, photos)
-                    # Guarda atributos de estilo em campos de estilo, se o campo existir
-                    set_feature_style_attributes(f, layer, stinfo) # TODO: Isolado, por enquanto!
-                    if style_info_sample is None and stinfo:
-                        style_info_sample = stinfo
-                    qgis_feats.append(f)
-
-                if qgis_feats:
-                    pr.addFeatures(qgis_feats)
-                    layer.updateExtents()
-                    # TODO: Isolado, por enquanto!
-                    # apply_layer_symbology(layer, gtype, style_info_sample, temp_img_dir)
-
-                    options = QgsVectorFileWriter.SaveVectorOptions()
-                    options.driverName = "GPKG"
-                    options.layerName = layer_name
-                    # TODO: Coloquei CreateOrOverwriteLayer direto pra testar, revisar essa lógica
-                    # options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
-                    if first_layer or not os.path.exists(gpkg_path):
-                        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
-                        first_layer = False
-                    else:
-                        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
-
-                    err = QgsVectorFileWriter.writeAsVectorFormatV2(
-                        layer, gpkg_path, QgsProject.instance().transformContext(), options
-                    )
-                    if err[0] != QgsVectorFileWriter.NoError:
-                        raise Exception(f"Erro ao salvar camada {layer_name} no GeoPackage: {err}")
-
-        # Salva imagens na tabela kmz_images do GeoPackage
-        conn = sqlite3.connect(gpkg_path)
-        cur = conn.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS kmz_images (id INTEGER PRIMARY KEY, name TEXT, data BLOB)")
-        for nome_arquivo in self.zip_kmz.namelist():
-            if nome_arquivo.lower().startswith('images/'):
-                with self.zip_kmz.open(nome_arquivo) as imagem_file:
-                    blob = imagem_file.read()
-                    cur.execute("INSERT INTO kmz_images (name, data) VALUES (?, ?)", (os.path.basename(nome_arquivo), blob))
-        conn.commit()
-        conn.close()
-
-        # Salva estilos na tabela Styles no GeoPackage
-        styles = parse_styles(root, ns) # Extrai estilos
-        # TODO: Exportar estilos em tabela no GPKG para aplicar depois
-        # styles[sid] = {
-        #     'id': sid,
-        #     'icon_href': icon_href,
-        #     'line_width': line_width,
-        #     'line_opacity': line_opacity,
-        #     'line_color_hex': line_color_hex,
-        #     'poly_opacity': poly_opacity,
-        #     'poly_color_hex': poly_color_hex
-        # }
-
-        conn = sqlite3.connect(gpkg_path)
-        cur = conn.cursor()
-        # TODO: Consertar a criação da tabela de estilos
-        cur.execute("CREATE TABLE IF NOT EXISTS Styles (id TEXT, icon_href TEXT, line_width INTEGER, line_opacity INTEGER, line_color_hex TEXT, poly_opacity INTEGER, poly_color_hex TEXT)")
-        for style in styles:
-
-                    cur.execute("INSERT INTO Styles (id, icon_href, line_width, line_opacity, line_color_hex, poly_opacity, poly_color_hex) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        # (styles[style]['id'], styles[style]['icon_href'], styles[style]['line_width'], styles[style]['line_opacity'], styles[style]['line_color_hex'], styles[style]['poly_opacity'], styles[style]['poly_color_hex']))
-                        (style['id'], style['icon_href'], style['line_width'], style['line_opacity'], style['line_color_hex'], style['poly_opacity'], style['poly_color_hex']))
-        conn.commit()
-        conn.close()
-
-        print(f"GeoPackage criado em: {gpkg_path}")
-        print("Camadas por Folder e tipo criadas (inclui TrackLine e TrackPoint).")
-        print("Simbologia aplicada conforme Style/styleUrl e campos de estilo gravados.")
-        print("Imagens salvas na tabela 'kmz_images' e extraídas para ícones em temp.")
-    
-
-    def salvar_em_gpkg(self):
-# ---------------- Uso ----------------
-# Este script lê um arquivo KMZ do Avenza Maps
-# e salva seu conteúdo em um GeoPackage.
-# 
-# Está guardando na tabela: fid, name, icon_href, line_color_hex, 
-# line_opacity, line_width_px, poly_color_hex, poly_opacity, 
-# pdfmaps_photos e demais atributos extraídos do SimpleData
-# (este último,não confirmei!!!)
-#         
-        # Extrai todas as feições do KML e salva em um GeoPackage, 
-        # organizando por Folder e tipo de geometria, 
-        # guardando a simbologia na tabela Styles
-        # e as imagens na tabela kmz_images.
-        # OBS.: As feições são armazenadas em tabelas com o nome "{folder}_{gtype}",
-        # onde gtype é point, linestring, polygon, trackline ou trackpoint.
-        # Quando existe algum Folder aninhado, está sendo criada uma tabela para cada Folder
-        # com o mesmo conteúdo!!!
-
-        gpkg_path = self.arquivo_kmz + "_.gpkg"
-
-        temp_img_dir = gpkg_path + "_images"
-        os.makedirs(temp_img_dir, exist_ok=True)
-
-        # Extrair doc.kml temporariamente
-        with self.zip_kmz.open('doc.kml') as kml_file:
-            temp_kml = gpkg_path + "_temp.kml"
-            with open(temp_kml, "wb") as f:
-                f.write(kml_file.read())
-
-        for nome_arquivo in self.zip_kmz.namelist():
-            if nome_arquivo.lower().startswith('images/'):
-                base = os.path.basename(nome_arquivo)
-                out_path = os.path.join(temp_img_dir, base)
-                # Extrai a imagem para o diretório temporário
-                with self.zip_kmz.open(nome_arquivo) as in_f, open(out_path, "wb") as out_f:
-                    out_f.write(in_f.read())
-
-        tree = ET.parse(temp_kml)
-        root = tree.getroot()
-        ns = {"kml": "http://www.opengis.net/kml/2.2"}
-        gx = {"gx": "http://www.google.com/kml/ext/2.2"}
-
-        # styles = parse_styles(root, ns) # Extrai estilos
-        # TODO: Exportar estilos em tabela no GPKG para aplicar depois
-
-        first_layer = True # Pra ver se acrescenta ou cria novo gpkg
-        if os.path.exists(gpkg_path):
-            # Abre gpkg e verifica se tem layers
-            # TODO: Pede para o usuário confirmar se quer sobreescrever
-            pass
-
-        folder_geom = {} # Dic aninhado: folder_name -> gtype -> lista de (name, geom, attrs, photos, style_info)
-        for folder in root.findall(".//kml:Folder", ns):
-            folder_name = folder.find("kml:name", ns).text if folder.find("kml:name", ns) is not None else "no_name"
-            folder_name = sanitize_layer_name(folder_name)
-            placemarks = folder.findall(".//kml:Placemark", ns)
-
-            for pm in placemarks:
-                name = pm.find("kml:name", ns).text if pm.find("kml:name", ns) is not None else ""
-                attrs_placemark = extract_simpledata_placemark(pm, ns) # Retorna dic de SimpleData, exceto pdfmaps_photos
-                photos = extract_pdfmaps_photos(pm, ns) # Retorna string com nomes separados por ";" (ou None)
-                style_id = extract_styleurl(pm, ns) # Retorna o nome do estilo sem o "#" (ou None!)
-                # style_info = styles.get(style_id) if style_id else None # TODO: Revisar essa lógica quando salvar na tabela de estilos
-
-                geoms = []
-                # TODO: Quando é um trajeto, mas só tem um ponto, está quebrando!
-                # ! >> TypeError: cannot unpack non-iterable NoneType object
-                # "C:\TI\Qgis\KML Testes\Avenza\3 camadas.kmz"
-                g_point, p_alt = extract_point(pm, ns)
-                if p_alt is not None:
-                    attrs_placemark['altitude'] = p_alt
-                # if g_point: geoms.append(("Point", g_point, attrs_placemark, photos, style_info))
-                if g_point: geoms.append(("Point", g_point, attrs_placemark, photos, style_id))
-
-                g_line = extract_linestring(pm, ns)
-                # if g_line: geoms.append(("LineString", g_line, attrs_placemark, photos, style_info))
-                if g_line: geoms.append(("LineString", g_line, attrs_placemark, photos, style_id))
-
-                g_poly = extract_polygon(pm, ns)
-                # if g_poly: geoms.append(("Polygon", g_poly, attrs_placemark, photos, style_info))
-                if g_poly: geoms.append(("Polygon", g_poly, attrs_placemark, photos, style_id))
-
-                line_geom, point_feats, t_alt = extract_track_with_point_attributes(pm, ns, gx)
-                if line_geom:
-                    # geoms.append(("TrackLine", line_geom, attrs_placemark, photos, style_info))
-                    geoms.append(("TrackLine", line_geom, attrs_placemark, photos, style_id))
-                if point_feats:
-                    for pt, per_point_attrs in point_feats:
-                        g = QgsGeometry.fromPointXY(pt)
-                        merged = dict(attrs_placemark)
-                        merged.update(per_point_attrs)
-                        # geoms.append(("TrackPoint", g, merged, photos, style_info))
-                        # geoms.append(("TrackPoint", g, merged, photos, style_id)) # TODO: TrackPoint deve ter um estilo próprio!!
-                        geoms.append(("TrackPoint", g, merged, photos, 'track')) # TODO: TrackPoint deve ter um estilo próprio!!
-
-                for gtype, geom, attrs2, photos2, stinfo in geoms:
-                    # Cria um dic aninhado: folder_name -> gtype -> lista de (name, geom, attrs, photos, style_info)
-                    # Se não existir, cria os dics intermediários, se existir, apenas adiciona na lista
-                    folder_geom.setdefault(folder_name, {}).setdefault(gtype, []).append(
-                        (name, geom, attrs2, photos2, stinfo)
-                    )
-
-        # first_layer = True # Pra ver se acrescenta ou cria novo gpkg
-        for folder_name, types in folder_geom.items(): # Loop por folders
-            for gtype, feats in types.items(): # Loop por tipos de geometria
-                if not feats:
-                    continue
-
-                if gtype in ("Point", "TrackPoint"):
-                    uri = "Point?crs=EPSG:4326"
-                elif gtype in ("LineString", "TrackLine"):
-                    uri = "LineString?crs=EPSG:4326"
-                elif gtype == "Polygon":
-                    uri = "Polygon?crs=EPSG:4326"
-                else:
-                    continue
-
-                layer_name = sanitize_layer_name(f"{folder_name}_{gtype.lower()}")
-                layer = QgsVectorLayer(uri, layer_name, "memory")
-                pr = layer.dataProvider()
-                pr.addAttributes([QgsField("name", QVariant.String)])
-                layer.updateFields()
-
-                extra_fields = set()
-                needs_photos = False
-                style_fields_present = set()
-                for _, _, attrs_map, photos, _ in feats: # feats:(name, geom, attrs2(=attrs_placemark), photos2, stinfo)
-                    for k in attrs_map.keys():
-                        # Addiciona apenas campos que ainda não existem na camada, sem repetir
-                        if layer.fields().indexOf(k) == -1 and k not in extra_fields:
-                            extra_fields.add(k)
-                    if photos:
-                        needs_photos = True
-
-                if extra_fields: # Adiciona campos extras em ordem alfabética
-                    pr.addAttributes([QgsField(k, QVariant.String) for k in sorted(extra_fields)])
-                if needs_photos and layer.fields().indexOf("pdfmaps_photos") == -1:
-                    pr.addAttributes([QgsField("pdfmaps_photos", QVariant.String)]) # Adiciona campo de fotos se necessário
-                store_style_attributes_in_layer(layer, style_fields_present, pr) # TODO: Verificar necessidade disso
-                layer.updateFields()
-
-                qgis_feats = []
-                style_info_sample = None
-                for name, geom, attrs_map, photos, stinfo in feats: # ! stinfo é pra ser um dic!
-                    if geom is None or geom.isEmpty(): # ! Possível inconsistência do KML?
-                        continue
-                    f = QgsFeature(layer.fields())
-                    f.setGeometry(geom)
-                    f.setAttribute(layer.fields().indexOf("name"), name)
-                    for k, v in attrs_map.items(): # Guarda os valores de cada campo extra, se o campo existir
-                        idx = layer.fields().indexOf(k)
-                        if idx != -1:
-                            f.setAttribute(idx, v)
-                    if photos:
-                        idx_photos = layer.fields().indexOf("pdfmaps_photos")
-                        if idx_photos != -1:
-                            f.setAttribute(idx_photos, photos)
-                    # Guarda atributos de estilo em campos de estilo, se o campo existir
-                    set_feature_style_attributes(f, layer, stinfo) # TODO: Isolado, por enquanto!
-                    if style_info_sample is None and stinfo:
-                        style_info_sample = stinfo
-                    qgis_feats.append(f)
-
-                if qgis_feats:
-                    pr.addFeatures(qgis_feats)
-                    layer.updateExtents()
-                    # TODO: Isolado, por enquanto!
-                    # apply_layer_symbology(layer, gtype, style_info_sample, temp_img_dir)
-
-                    options = QgsVectorFileWriter.SaveVectorOptions()
-                    options.driverName = "GPKG"
-                    options.layerName = layer_name
-                    # TODO: Coloquei CreateOrOverwriteLayer direto pra testar, revisar essa lógica
-                    # options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
-                    if first_layer or not os.path.exists(gpkg_path):
-                        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteFile
-                        first_layer = False
-                    else:
-                        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
-
-                    err = QgsVectorFileWriter.writeAsVectorFormatV2(
-                        layer, gpkg_path, QgsProject.instance().transformContext(), options
-                    )
-                    if err[0] != QgsVectorFileWriter.NoError:
-                        raise Exception(f"Erro ao salvar camada {layer_name} no GeoPackage: {err}")
-
-        # Salva imagens na tabela kmz_images do GeoPackage
-        conn = sqlite3.connect(gpkg_path)
-        cur = conn.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS kmz_images (id INTEGER PRIMARY KEY, name TEXT, data BLOB)")
-        for nome_arquivo in self.zip_kmz.namelist():
-            if nome_arquivo.lower().startswith('images/'):
-                with self.zip_kmz.open(nome_arquivo) as imagem_file:
-                    blob = imagem_file.read()
-                    cur.execute("INSERT INTO kmz_images (name, data) VALUES (?, ?)", (os.path.basename(nome_arquivo), blob))
-        conn.commit()
-        conn.close()
-
-        # Salva estilos na tabela Styles no GeoPackage
-        styles = parse_styles(root, ns) # Extrai estilos
-        # TODO: Exportar estilos em tabela no GPKG para aplicar depois
-        # styles[sid] = {
-        #     'id': sid,
-        #     'icon_href': icon_href,
-        #     'line_width': line_width,
-        #     'line_opacity': line_opacity,
-        #     'line_color_hex': line_color_hex,
-        #     'poly_opacity': poly_opacity,
-        #     'poly_color_hex': poly_color_hex
-        # }
-
-        conn = sqlite3.connect(gpkg_path)
-        cur = conn.cursor()
-        # TODO: Consertar a criação da tabela de estilos
-        cur.execute("CREATE TABLE IF NOT EXISTS Styles (id TEXT, icon_href TEXT, line_width INTEGER, line_opacity INTEGER, line_color_hex TEXT, poly_opacity INTEGER, poly_color_hex TEXT)")
-        for style in styles:
-
-                    cur.execute("INSERT INTO Styles (id, icon_href, line_width, line_opacity, line_color_hex, poly_opacity, poly_color_hex) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        # (styles[style]['id'], styles[style]['icon_href'], styles[style]['line_width'], styles[style]['line_opacity'], styles[style]['line_color_hex'], styles[style]['poly_opacity'], styles[style]['poly_color_hex']))
-                        (style['id'], style['icon_href'], style['line_width'], style['line_opacity'], style['line_color_hex'], style['poly_opacity'], style['poly_color_hex']))
-        conn.commit()
-        conn.close()
-
-        print(f"GeoPackage criado em: {gpkg_path}")
-        print("Camadas por Folder e tipo criadas (inclui TrackLine e TrackPoint).")
-        print("Simbologia aplicada conforme Style/styleUrl e campos de estilo gravados.")
-        print("Imagens salvas na tabela 'kmz_images' e extraídas para ícones em temp.")
-    
     def parse_kml(self):
         with self.zip_kmz.open('doc.kml') as kml_file:
             source_kml = kml_file.read()
@@ -958,15 +561,15 @@ kmz_01 = Zip_Kmz(kmz_path)
 # kmz_01.salvar_em_gpkg()
 print('simbologia do kmz_01:')
 kmz_01.process_simbologia()
-print(f'\t{kmz_01.simbologia=}\n')
+# print(f'\tgpkg: {kmz_01.simbologia=}\n')
 # print('schema do kmz_01:')
 kmz_01.process_schema()
-print(f'\t{kmz_01.point_cols=}\n')
-print(f'\t{kmz_01.schema=}\n')
+# print(f'\t{kmz_01.point_cols=}\n')
+# print(f'\tgpkg: {kmz_01.schema=}\n')
 
 # Listando todas as camadas do kml:
 # print(f'\n\t{[x.find("kml:name", kmz_01.ns).text for x in kmz_01.root.findall(".//kml:Folder", kmz_01.ns)]=}')
 
 # result = kmz_01.process_folders()
-# kmz_01.save_images_to_gpkg()
+kmz_01.save_imgs_to_path()
 kmz_01.close()
