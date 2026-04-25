@@ -416,21 +416,23 @@ class Zip_Kmz:
         self.simbologia = None
         self.point_cols = ['Name', 'geometry', 'Time', 'Style', 'Notes', 'Icon_URL', 'Icon_local']
         self.schema = {}
+        if self.arquivo_kmz.split('.')[-1].lower() == 'kmz':
+            self.img_dir = self.save_imgs_to_path()
         # self.folders = self.process_folders()
 
     def save_imgs_to_path(self):
-        # Salva as imagens do kmz em um diretório temporário
-        # img_dir = os.path.join(os.path.splitext(self.arquivo_kmz)[0].replace('/','\\'), 'temp_images')
-        img_dir = os.path.splitext(self.arquivo_kmz)[0].replace('/','\\') + '_images'
+        # Salva as imagens do kmz em uma pasta
+        img_dir = os.path.splitext(self.arquivo_kmz)[0].replace('/','\\')
         if not os.path.exists(img_dir):
             os.makedirs(img_dir)
         else:
             print(f"Diretório de imagens já existe: {img_dir}")
 
         for file in self.zip_kmz.namelist():
-            if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+            # if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+            if file.startswith("images/"):
                 self.zip_kmz.extract(file, img_dir)
-        return img_dir
+        return os.path.join(img_dir, 'images')
 
     def process_folders(self):
         # Processa todos os folders
@@ -571,5 +573,4 @@ kmz_01.process_schema()
 # print(f'\n\t{[x.find("kml:name", kmz_01.ns).text for x in kmz_01.root.findall(".//kml:Folder", kmz_01.ns)]=}')
 
 # result = kmz_01.process_folders()
-kmz_01.save_imgs_to_path()
 kmz_01.close()
