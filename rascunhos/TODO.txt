@@ -1,0 +1,4 @@
+1- Salvar as imagens em uma determinada pasta (img_path);
+2- Criar, na camada, uma configuração de 'map tips' 
+pra mostrar as imagens associadas à feição em uma tela HTML;
+3- Habilitar o 'map tips' da camada.
