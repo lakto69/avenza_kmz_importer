@@ -374,6 +374,14 @@ class AvenzaKMZImporter:
         gdf_camada = gpd.GeoDataFrame(df_camada, crs='EPSG:4326')
         # converte gpd em geojson
         json_camada = gdf_camada.to_json()
+
+        layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr') # ? repetida
+
+        # Defina a coluna a ser categorizada # ? repetida
+        column_name = 'Style' # ? repetida
+
+        # Crie a classe de simbologia categorizada # ? repetida
+        renderer = QgsCategorizedSymbolRenderer(column_name, []) # ? repetida
         
         # Processando a simbologia da camada
         if tipo_camada=='Point':
@@ -383,14 +391,6 @@ class AvenzaKMZImporter:
             # Atualiza o dicionário de ícones com a pasta onde o arquivo está
             for i in icones:
                 icones[i] = os.path.join(self.icons_dir.replace('/', '\\'), icones[i])
-
-            layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr')
-
-            # Defina a coluna a ser categorizada
-            column_name = 'Style'
-
-            # Crie a classe de simbologia categorizada
-            renderer = QgsCategorizedSymbolRenderer(column_name, [])
 
             # Crie os símbolos para cada categoria
             for value, svg_path in icones.items():
@@ -403,29 +403,7 @@ class AvenzaKMZImporter:
                 category = QgsRendererCategory(value, symbol, value)
                 renderer.addCategory(category)
 
-            # Atribua a simbologia à camada
-            layer_add.setRenderer(renderer)
-
-            # Mostra a contagem de elementos
-            layer_add.setCustomProperty("showFeatureCount", True)
-
-            # Atualize a exibição da camada
-            layer_add.triggerRepaint()
-
-            # Adicionar as camadas ao projeto do QGIS
-            QgsProject.instance().addMapLayer(layer_add, False)
-            # Adicionando as camadas em um grupo:
-            grupo.addLayer(layer_add)
-
         elif tipo_camada=='LineString':
-            layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr')
-
-            # Defina a coluna a ser categorizada
-            column_name = 'Style'
-
-            # Crie a classe de simbologia categorizada
-            renderer = QgsCategorizedSymbolRenderer(column_name, [])
-
             # Crie os símbolos para cada categoria
             for estilo in df_camada.Style.unique():
                 symbol = QgsSymbol.defaultSymbol(layer_add.geometryType())
@@ -438,26 +416,7 @@ class AvenzaKMZImporter:
                 category = QgsRendererCategory(estilo, symbol, estilo)
                 renderer.addCategory(category)
 
-            # Atribua a simbologia à camada
-            layer_add.setRenderer(renderer)
-
-            # Atualize a exibição da camada
-            layer_add.triggerRepaint()
-
-            # Adicionar as camadas ao projeto do QGIS
-            QgsProject.instance().addMapLayer(layer_add, False)
-            # Adicionando as camadas em um grupo:
-            grupo.addLayer(layer_add)
-          
         elif tipo_camada=='Polygon':
-            layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr')
-
-            # Defina a coluna a ser categorizada
-            column_name = 'Style'
-
-            # Crie a classe de simbologia categorizada
-            renderer = QgsCategorizedSymbolRenderer(column_name, [])
-
             # Crie os símbolos para cada categoria
             for estilo in df_camada.Style.unique():
                 # Crie um símbolo de preenchimento para o polígono
@@ -477,17 +436,20 @@ class AvenzaKMZImporter:
                 category = QgsRendererCategory(estilo, fill_symbol, estilo)
                 renderer.addCategory(category)
 
-            # Atribua a simbologia à camada
-            layer_add.setRenderer(renderer)
+        # Atribua a simbologia à camada # ? repetida
+        layer_add.setRenderer(renderer) # ? repetida
 
-            # Atualize a exibição da camada
-            layer_add.triggerRepaint()
+        # Mostra a contagem de elementos
+        layer_add.setCustomProperty("showFeatureCount", True) 
 
-            # Adicionar as camadas ao projeto do QGIS
-            QgsProject.instance().addMapLayer(layer_add, False)
+        # Atualize a exibição da camada # ? repetida
+        layer_add.triggerRepaint() # ? repetida
 
-            # Adicionando as camadas em um grupo:
-            grupo.addLayer(layer_add)
+        # Adicionar as camadas ao projeto do QGIS # ? repetida
+        QgsProject.instance().addMapLayer(layer_add, False) # ? repetida
+
+        # Adicionando as camadas em um grupo: # ? repetida
+        grupo.addLayer(layer_add) # ? repetida
 
         # Rotular feições
         if self.dlg.checkBoxRotularNome.isChecked():
