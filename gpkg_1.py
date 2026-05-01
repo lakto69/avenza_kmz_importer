@@ -419,23 +419,27 @@ class Zip_Kmz:
         self.simbologia = None
         self.point_cols = ['Name', 'geometry', 'Time', 'Style', 'Notes', 'Icon_URL', 'Icon_local']
         self.schema = {}
+<<<<<<< HEAD
         if self.arquivo_kmz.split('.')[-1].lower() == 'kmz':
             self.img_dir = self.save_imgs_to_path()
         self.folders = self.process_folders()
+=======
+        # self.folders = self.process_folders()
+>>>>>>> parent of 18ed0e6 (salvar img na pasta 2)
 
     def save_imgs_to_path(self):
-        # Salva as imagens do kmz em uma pasta
-        img_dir = os.path.splitext(self.arquivo_kmz)[0].replace('/','\\')
+        # Salva as imagens do kmz em um diretório temporário
+        # img_dir = os.path.join(os.path.splitext(self.arquivo_kmz)[0].replace('/','\\'), 'temp_images')
+        img_dir = os.path.splitext(self.arquivo_kmz)[0].replace('/','\\') + '_images'
         if not os.path.exists(img_dir):
             os.makedirs(img_dir)
         else:
             print(f"Diretório de imagens já existe: {img_dir}")
 
         for file in self.zip_kmz.namelist():
-            # if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
-            if file.startswith("images/"):
+            if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
                 self.zip_kmz.extract(file, img_dir)
-        return os.path.join(img_dir, 'images')
+        return img_dir
 
     def process_folders(self):
         # Processa todos os folders
@@ -712,6 +716,7 @@ kmz_01.process_schema()
 # Listando todas as camadas do kml:
 # print(f'\n\t{[x.find("kml:name", kmz_01.ns).text for x in kmz_01.root.findall(".//kml:Folder", kmz_01.ns)]=}')
 
+<<<<<<< HEAD
 
 # kmz_01.setup_map_tip(
 #     meu_layer=result[0].get('data').get('Point'), 
@@ -720,4 +725,8 @@ kmz_01.process_schema()
 #     )
 
 kmz_01.add_layers_to_qgis()
+=======
+# result = kmz_01.process_folders()
+kmz_01.save_imgs_to_path()
+>>>>>>> parent of 18ed0e6 (salvar img na pasta 2)
 kmz_01.close()
