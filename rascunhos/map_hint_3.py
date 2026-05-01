@@ -19,7 +19,7 @@ def cria_camada_pontos(campo_imagem):
         },
         crs="EPSG:4326"
     )
-    print(f'gdf: {gdf.shape[0]}')
+    print(f'gdf: {gdf.to_json()}')
 
     # converte gpd em geojson
     json_camada = gdf.to_json()
@@ -70,12 +70,18 @@ def setup_map_tip(meu_layer, basepath, field_name="Photo Name", width=80):
                             height:auto;
                             image-orientation: from-image;
                             }}
+                            p {{
+                            margin:0px;
+                            font-size:8px;
+                            text-align:center;
+                            color:#1239cb;
+                            }}
                         </style>
                         <table border="0" cellspacing="1" align="center"><tr>' ||
                         array_to_string(
                             array_foreach(
                                 @list,
-                                '<td><a href="' || @basepath || trim(@element) || '.jpg">'
+                                '<td><p>' || trim(@element) || '.jpg</p><a href="' || @basepath || trim(@element) || '.jpg">'
                                 || '<img src="' || @basepath || trim(@element) || '.jpg"></a></td>'
                             ),
                             ''

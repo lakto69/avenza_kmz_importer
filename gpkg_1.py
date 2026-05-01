@@ -6,6 +6,8 @@ import zipfile
 import sqlite3
 import xml.etree.ElementTree as ET
 
+import geopandas as gpd
+
 from qgis.core import (
     QgsVectorLayer, QgsProject, QgsVectorFileWriter, QgsField, QgsFeature,
     QgsGeometry, QgsPointXY, QgsMarkerSymbol, QgsRasterMarkerSymbolLayer,
@@ -149,7 +151,8 @@ def extract_point_el(pm):
     if el is None or (el.text or "").strip() == "":
         return None, None
     pts, alt = parse_coords_text(el.text)
-    return QgsGeometry.fromPointXY(pts[0]) if pts else None, alt # TODO: Verificar necessidade de adicionar altitude (3ª coordenada)
+    # return QgsGeometry.fromPointXY(pts[0]) if pts else None, alt # TODO: Verificar necessidade de adicionar altitude (3ª coordenada)
+    return QgsGeometry.fromPointXY(pts[0]) if pts else None # TODO: Verificar necessidade de adicionar altitude (3ª coordenada)
 
 def extract_linestring_el(pm):
     el = pm.find(".//kml:coordinates", ns)
@@ -418,7 +421,7 @@ class Zip_Kmz:
         self.schema = {}
         if self.arquivo_kmz.split('.')[-1].lower() == 'kmz':
             self.img_dir = self.save_imgs_to_path()
-        # self.folders = self.process_folders()
+        self.folders = self.process_folders()
 
     def save_imgs_to_path(self):
         # Salva as imagens do kmz em uma pasta
@@ -469,9 +472,32 @@ class Zip_Kmz:
             photos = extract_pdfmaps_photos(pm, ns) # Retorna string com nomes separados por ";" (ou None)
             style_id = extract_styleurl(pm, ns) # Retorna o nome do estilo sem o "#" (ou None!)
             tipo, coord = self.process_geometria(pm) # Retorna tipo de geometria e coordenadas em texto
+            # Caso seja um Track, coord é uma tupla: (geom_linha, geom_pontos, altitudes)
+            if tipo == 'Track':
+                coord_linha, coord_pontos, altitudes = coord
+                # Preparar um conjunto de pontos e atributos para os pontos do Track, usando as altitudes e outros atributos do Track
+# # Junta os dados Placemark + geometria de pontos + array_data:
+# for i, geometry_pt in enumerate(point_geometry):
+#     reg = tuple([feature_name, geometry_pt, time, urlstyle, notes, icon_url, icon_local] + list(array_data.loc[i]))
+#     points.append(reg)                
+                track_pt = []
+                for coord in coord_pontos:
+                    result = {'name': name, 'style_id': style_id, 'tipo': 'Point', 'geometry': coord}
+                    result.update(attrs_placemark)
+                    track_pt.append(result)
+
+                # Preparar um conjunto de linhas para a linha do Track, usando as altitudes e outros atributos do Track
+                result = {'name': name, 'style_id': style_id, 'tipo': 'LineString', 'geometry': coord_linha}
+                result.update(attrs_placemark)
+
+                return track_pt + [result] # Retorna uma lista de dicionários, um para cada ponto do Track e um para a linha do Track
+
             # print(f"\t\t\t-Geometria: {tipo}")
             # print(f"\t\t\t'-coordinates': {coord}")
-            return {'name': name, 'attrs': attrs_placemark, 'photos': photos, 'style_id': style_id, 'tipo': tipo, 'coord': coord}
+            # return {'name': name, 'photos': photos, 'style_id': style_id, 'tipo': tipo, 'geometry': coord, 'attrs': attrs_placemark}
+            result = {'name': name, 'style_id': style_id, 'tipo': tipo, 'geometry': coord}
+            result.update(attrs_placemark)
+            return result
 
     def process_geometria(self, pm):
         # xpath = './/{' + ns["kml"] + '}coordinates/..'
@@ -549,6 +575,120 @@ class Zip_Kmz:
             source_kml = kml_file.read()
             root = ET.fromstring(source_kml)
         return root
+
+    def add_layers_to_qgis(self):
+        # return # ! Para parar aqui
+        # Antes de criar o grupo, verifica se tem algum conteúdo pra adicionar
+        is_empty = True
+        # Cria um grupo com o nome do arquivo: os.path.split(self.arquivo_kmz)[-1]
+        root = QgsProject.instance().layerTreeRoot()
+        group_name = os.path.splitext(os.path.split(self.arquivo_kmz)[-1])[0] 
+        file_group = root.addGroup(group_name) # Nome do arquivo KMZ/KML
+
+        # Cria um grupo para cada folder
+        for folder in self.folders:
+            folder_name = folder['name']
+            data = folder['data']
+            layers = [features for geom_type in data for features in data[geom_type] if features]
+            if layers:
+                is_empty = False
+                folder_group = file_group.addGroup(folder_name) # Subgrupo para cada folder, com o nome do folder
+                # Add each layer to the group
+                for layer in layers:
+                    # if layer['tipo']!='Track':
+                    tipo_group = folder_group.addGroup(layer['tipo']) # Subgrupo para cada tipo de geometria, com o nome do tipo
+                    print(f"\tlayer: {layer} ")
+                    # !Está dando pau por aqui! 
+                    # !Pega: Photo Name, Photo Date, Photo Timestamp, Photo Location, Photo Altitude, Photo Orientation, Device Type
+                    # !Como sendo o conteúdo do layer!
+                    gdf = gpd.GeoDataFrame(layer, index=[0], crs="EPSG:4326") 
+                    print(f"\t\t-gdf: {gdf}")   
+                    layer_add = QgsVectorLayer(gdf.to_json(), layer['name'], 'ogr')
+                    QgsProject.instance().addMapLayer(layer_add, False)
+                    tipo_group.addLayer(layer_add)
+
+                    # se houver fotos associadas ao placemark
+                    if layer.get('photos')!=None:
+                        # Aplica o Map Tip para a camada, usando o campo 'photos'
+                        # e o diretório de imagens extraído do kmz
+                        # self.setup_map_tip(meu_layer=layer, basepath=self.img_dir, field_name='photos')
+                        pass
+
+        # Se nenhuma camada foi adicionada, remove o grupo
+        if is_empty:
+            QgsProject.instance().removeGroup(group_name)
+
+     
+
+    def setup_map_tip(self, meu_layer, basepath, field_name="photos", width=80):
+        # "Photo Name" é o nome do campo que contém os nomes das fotos sem extensão, separados por ";"
+        # 'basepath' é o caminho onde estão as imagens.
+        # O Map Tip exibe as imagens em miniatura, e cada miniatura é um link para a imagem original.
+        # Se o campo "Photo Name" estiver vazio ou nulo, o Map Tip exibirá "No related image".
+        # O estilo CSS é aplicado para melhorar a aparência das miniaturas e da tabela.
+
+        # Expressão QGIS que gera o HTML
+        expr = f'''
+        with_variable(
+            'basepath',
+            'file:///{basepath}/',
+            with_variable(
+                'raw',
+                "{field_name}",
+                CASE
+                    WHEN @raw IS NULL OR trim(@raw) = '' THEN
+                        '<b>No related image</b>'
+                    ELSE
+                        with_variable(
+                            'list',
+                            string_to_array(@raw, ';'),
+                            '<style>
+                                td {{
+                                border:2px solid blue;
+                                background-color:#f0f8ff;
+                                text-align:center;
+                                padding:3px;
+                                }}
+                                img {{
+                                width:{width}px;
+                                height:auto;
+                                image-orientation: from-image;
+                                }}
+                                p {{
+                                margin:0px;
+                                font-size:8px;
+                                text-align:center;
+                                color:#1239cb;
+                                }}
+                            </style>
+                            <table border="0" cellspacing="1" align="center"><tr>' ||
+                            array_to_string(
+                                array_foreach(
+                                    @list,
+                                    '<td><p>' || trim(@element) || '.jpg</p><a href="' || @basepath || trim(@element) || '.jpg">'
+                                    || '<img src="' || @basepath || trim(@element) || '.jpg"></a></td>'
+                                ),
+                                ''
+                            ) ||
+                            '</tr></table>'
+                        )
+                END
+            )
+        )
+        '''
+
+        # Se refere à camada pelo nome
+        # layer = QgsProject.instance().mapLayersByName(layer_name)[0]
+        # Se referire à camada pelo objeto
+        layer = meu_layer
+
+        # grava como HTML Map Tip, avaliando a expressão entre [% ... %]
+        html_template = "[% " + expr + " %]"
+
+        layer.setMapTipTemplate(html_template)
+        layer.triggerRepaint()
+
+        print(f"HTML Map Tip configurado para a camada: {layer.name()}")
         
     def close(self):
         self.zip_kmz.close()
@@ -561,7 +701,7 @@ kmz_path = r"C:\Users\dezes\OneDrive\Documents\python\Qgis\Avenza\Avenza Ok\BSB-
 print('\nInicializando kmz_01:')
 kmz_01 = Zip_Kmz(kmz_path)
 # kmz_01.salvar_em_gpkg()
-print('simbologia do kmz_01:')
+# print('simbologia do kmz_01:')
 kmz_01.process_simbologia()
 # print(f'\tgpkg: {kmz_01.simbologia=}\n')
 # print('schema do kmz_01:')
@@ -572,5 +712,12 @@ kmz_01.process_schema()
 # Listando todas as camadas do kml:
 # print(f'\n\t{[x.find("kml:name", kmz_01.ns).text for x in kmz_01.root.findall(".//kml:Folder", kmz_01.ns)]=}')
 
-# result = kmz_01.process_folders()
+
+# kmz_01.setup_map_tip(
+#     meu_layer=result[0].get('data').get('Point'), 
+#     field_name='photos', 
+#     basepath=kmz_01.save_imgs_to_path()
+#     )
+
+kmz_01.add_layers_to_qgis()
 kmz_01.close()

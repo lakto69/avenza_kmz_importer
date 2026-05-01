@@ -42,7 +42,7 @@ from .resources import *
 from .avenza_kmz_importer_dialog import AvenzaKMZImporterDialog
 
 # Chama gpkg_1.py para trabalhar em testes
-from .gpkg_1 import *
+# from .gpkg_1 import *
 
 
 class AvenzaKMZImporter:
@@ -378,6 +378,15 @@ class AvenzaKMZImporter:
         gdf_camada = gpd.GeoDataFrame(df_camada, crs='EPSG:4326')
         # converte gpd em geojson
         json_camada = gdf_camada.to_json()
+
+        layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr') # ? repetiu
+
+        # Defina a coluna a ser categorizada
+        column_name = 'Style' # ? repetiu
+
+        # Crie a classe de simbologia categorizada
+        renderer = QgsCategorizedSymbolRenderer(column_name, []) # ? repetiu
+
         
         # Processando a simbologia da camada
         if tipo_camada=='Point':
@@ -387,15 +396,6 @@ class AvenzaKMZImporter:
             # Atualiza o dicionário de ícones com a pasta onde o arquivo está
             for i in icones:
                 icones[i] = os.path.join(self.icons_dir.replace('/', '\\'), icones[i])
-
-            layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr')
-
-            # Defina a coluna a ser categorizada
-            column_name = 'Style'
-
-            # Crie a classe de simbologia categorizada
-            renderer = QgsCategorizedSymbolRenderer(column_name, [])
-
             # Crie os símbolos para cada categoria
             for value, svg_path in icones.items():
                 symbol = QgsSymbol.defaultSymbol(layer_add.geometryType())
@@ -407,29 +407,7 @@ class AvenzaKMZImporter:
                 category = QgsRendererCategory(value, symbol, value)
                 renderer.addCategory(category)
 
-            # Atribua a simbologia à camada
-            layer_add.setRenderer(renderer)
-
-            # Mostra a contagem de elementos
-            layer_add.setCustomProperty("showFeatureCount", True)
-
-            # Atualize a exibição da camada
-            layer_add.triggerRepaint()
-
-            # Adicionar as camadas ao projeto do QGIS
-            QgsProject.instance().addMapLayer(layer_add, False)
-            # Adicionando as camadas em um grupo:
-            grupo.addLayer(layer_add)
-
         elif tipo_camada=='LineString':
-            layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr')
-
-            # Defina a coluna a ser categorizada
-            column_name = 'Style'
-
-            # Crie a classe de simbologia categorizada
-            renderer = QgsCategorizedSymbolRenderer(column_name, [])
-
             # Crie os símbolos para cada categoria
             for estilo in df_camada.Style.unique():
                 symbol = QgsSymbol.defaultSymbol(layer_add.geometryType())
@@ -441,27 +419,8 @@ class AvenzaKMZImporter:
                                     
                 category = QgsRendererCategory(estilo, symbol, estilo)
                 renderer.addCategory(category)
-
-            # Atribua a simbologia à camada
-            layer_add.setRenderer(renderer)
-
-            # Atualize a exibição da camada
-            layer_add.triggerRepaint()
-
-            # Adicionar as camadas ao projeto do QGIS
-            QgsProject.instance().addMapLayer(layer_add, False)
-            # Adicionando as camadas em um grupo:
-            grupo.addLayer(layer_add)
           
         elif tipo_camada=='Polygon':
-            layer_add = QgsVectorLayer(json_camada, nome_camada, 'ogr')
-
-            # Defina a coluna a ser categorizada
-            column_name = 'Style'
-
-            # Crie a classe de simbologia categorizada
-            renderer = QgsCategorizedSymbolRenderer(column_name, [])
-
             # Crie os símbolos para cada categoria
             for estilo in df_camada.Style.unique():
                 # Crie um símbolo de preenchimento para o polígono
@@ -481,21 +440,23 @@ class AvenzaKMZImporter:
                 category = QgsRendererCategory(estilo, fill_symbol, estilo)
                 renderer.addCategory(category)
 
-            # Atribua a simbologia à camada
-            layer_add.setRenderer(renderer)
-
-            # Atualize a exibição da camada
-            layer_add.triggerRepaint()
-
-            # Adicionar as camadas ao projeto do QGIS
-            QgsProject.instance().addMapLayer(layer_add, False)
-
-            # Adicionando as camadas em um grupo:
-            grupo.addLayer(layer_add)
-
         # Rotular feições
         if self.dlg.checkBoxRotularNome.isChecked():
             self.setLabeling(layer_add)
+
+            # Atribua a simbologia à camada
+            layer_add.setRenderer(renderer) # ? repetiu
+
+            # Mostra a contagem de elementos # ! Não tem isso no LineString nem no Polygon
+            layer_add.setCustomProperty("showFeatureCount", True)
+
+            # Atualize a exibição da camada
+            layer_add.triggerRepaint() # ? repetiu
+
+            # Adicionar as camadas ao projeto do QGIS
+            QgsProject.instance().addMapLayer(layer_add, False) # ? repetiu
+            # Adicionando as camadas em um grupo:
+            grupo.addLayer(layer_add) # ? repetiu
 
         self.cursor_arrow()
 
@@ -603,7 +564,9 @@ class AvenzaKMZImporter:
                 # Cria DataFrames pandas para cada tipo de feição da camada atual
                 if points!=[]:
                     try:
-                        df_points = pd.DataFrame(points, columns=self.point_cols)
+                        self.add_log('xxxx points.keys()', dir(points)) # ! points está vindo sem valores, somente com chaves
+                        # df_points = pd.DataFrame(points, columns=self.point_cols)
+                        df_points = pd.DataFrame(points, columns=list(points.keys()))
                         self.add_df_to_qgis(df_points, 'Points', self.simbologia, 'Point', camada_atual)
                     except Exception as e:
                         self.cursor_arrow()
@@ -693,9 +656,30 @@ class AvenzaKMZImporter:
             if feature_type == 'Point':
                 geometry = Point(coordinates[0][0], coordinates[0][1], coordinates[0][2])
                 if self.esquemas.get('track_schema') is not None:
+                    # points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local] + [None, None] + [None for x in list(self.esquemas['track_schema'].keys())]))
                     points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local] + [None, None] + [None for x in list(self.esquemas['track_schema'].keys())]))
+                    registro = {
+                        'name': feature_name, 
+                        'geometry': geometry, 
+                        'time': time, 
+                        'style_id': urlstyle, 
+                        'icon_url': icon_url, 
+                        'icon_local': icon_local}
+                    registro.update(notes) # ! MEXI AQUI!!!
+                    registro.update({key: None for key in list(self.esquemas['track_schema'].keys())})
+                    # points.append(tuple(registro))
+                    points.append(registro)
                 else:
-                    points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local]))
+                    # points.append(tuple([feature_name, geometry, time, urlstyle, notes, icon_url, icon_local]))
+                    registro = {
+                        'name': feature_name, 
+                        'geometry': geometry, 
+                        'time': time, 
+                        'style_id': urlstyle, 
+                        'icon_url': icon_url, 
+                        'icon_local': icon_local}
+                    registro.update(notes)
+                    points.append((registro))
 
             elif feature_type == 'Polygon':
                 try:

@@ -108,8 +108,8 @@ def setup_map_tip(layer_name, basepath, field_name="Photo Name", width=80):
 nome_imagem = 'teste'
 minha_camada = cria_camada_pontos('teste')
 
-# setup_map_tip(
-#     layer_name="nome_camada_2", 
-#     field_name=nome_imagem, 
-#     basepath=r"C:/Users/dezes/OneDrive/Documents/python/Qgis/scripts/imagens"
-#     )
+setup_map_tip(
+    layer_name="nome_camada_2", 
+    field_name=nome_imagem, 
+    basepath=r"C:/Users/dezes/OneDrive/Documents/python/Qgis/scripts/imagens"
+    )
