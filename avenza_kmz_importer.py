@@ -87,6 +87,7 @@ class AvenzaKMZImporter:
         self.settings = QSettings('MyApp', 'AvenzaKMZImporter')
         # Inicializa o diálogo e define sua posição com base nas configurações
         self.arquivo_kml = ''
+        self.img_dir = ''
 
         self.initDialog()
         # Recoloca a janela na posição onde foi fechada antes
@@ -114,7 +115,6 @@ class AvenzaKMZImporter:
         self.tree = None
         self.point_cols = ['Name', 'geometry', 'Time', 'Style', 'Notes', 'Icon_URL', 'Icon_local', 'images']
         self.esquemas = {}
-
 
     def initDialog(self):
         # Inicialize o diálogo e faça todas as configurações necessárias
@@ -484,13 +484,17 @@ class AvenzaKMZImporter:
     def extract_kml_from_kmz(self, arquivo_kmz):
         self.cursor_wait()
         try:
+
             with zipfile.ZipFile(arquivo_kmz, 'r') as kmz_file:
+                self.img_dir = self.save_imgs_to_path(kmz_file)
+                
                 for nome_arquivo in kmz_file.namelist():
                     if nome_arquivo.lower().endswith('.kml'):
                         with kmz_file.open(nome_arquivo) as kml_file:
                             source_kml = kml_file.read()
                             return source_kml, nome_arquivo
-                        
+            
+
         except Exception as e:
             self.add_log(f"{self.tr(u'Error extracting KML from KMZ')} => {str(e)}\n")
         self.cursor_arrow()
@@ -788,4 +792,19 @@ class AvenzaKMZImporter:
     def cursor_arrow(self):
         self.dlg.setCursor(Qt.CursorShape.ArrowCursor)
 
+    def save_imgs_to_path(self, kmz_file):
+        # Salva as imagens do kmz em um diretório temporário
+        img_dir = os.path.splitext(self.arquivo_kml)[0].replace('/','\\') + '_images'
+        self.add_log(self.tr(u'Extracting images from KMZ file in the folder'), img_dir)
+        if not os.path.exists(img_dir):
+            os.makedirs(img_dir)
+        # else:
+        #     print(f"Diretório de imagens já existe: {img_dir}")
+        #     self.add_log(self.tr(u'Image directory already exists'), )
+
+        for file in kmz_file.namelist():
+            if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+                kmz_file.extract(file, img_dir)
+
+        return img_dir
 
