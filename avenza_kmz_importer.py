@@ -372,6 +372,7 @@ class AvenzaKMZImporter:
         self.cursor_wait()
         # Transformar o df em gpd
         gdf_camada = gpd.GeoDataFrame(df_camada, crs='EPSG:4326')
+
         # converte gpd em geojson
         json_camada = gdf_camada.to_json()
 
@@ -451,11 +452,86 @@ class AvenzaKMZImporter:
         # Adicionando as camadas em um grupo:
         grupo.addLayer(layer_add)
 
+        if df_camada['images'][df_camada['images'] != None ].count() > 0:
+            # Chama o método de map tips
+            self.setup_map_tip(meu_layer=layer_add, basepath=os.path.join(self.img_dir, 'images'))
+
         # Rotular feições
         if self.dlg.checkBoxRotularNome.isChecked():
             self.setLabeling(layer_add)
 
         self.cursor_arrow()
+
+
+    def setup_map_tip(self, meu_layer, basepath, field_name="images", width=80):
+        # "Photo Name" é o nome do campo que contém os nomes das fotos sem extensão, separados por ";"
+        # 'basepath' é o caminho onde estão as imagens.
+        # O Map Tip exibe as imagens em miniatura, e cada miniatura é um link para a imagem original.
+        # Se o campo "Photo Name" estiver vazio ou nulo, o Map Tip exibirá "No related image".
+        # O estilo CSS é aplicado para melhorar a aparência das miniaturas e da tabela.
+
+        # Expressão QGIS que gera o HTML
+        expr = f'''
+        with_variable(
+            'basepath',
+            'file:///{basepath}/',
+            with_variable(
+                'raw',
+                "{field_name}",
+                CASE
+                    WHEN @raw IS NULL OR trim(@raw) = '' THEN
+                        '<b>No related image</b>'
+                    ELSE
+                        with_variable(
+                            'list',
+                            string_to_array(@raw, ';'),
+                            '<style>
+                                td {{
+                                border:2px solid blue;
+                                background-color:#f0f8ff;
+                                text-align:center;
+                                padding:3px;
+                                }}
+                                img {{
+                                width:{width}px;
+                                height:auto;
+                                image-orientation: from-image;
+                                }}
+                                p {{
+                                margin:0px;
+                                font-size:8px;
+                                text-align:center;
+                                color:#1239cb;
+                                }}
+                            </style>
+                            <table border="0" cellspacing="1" align="center"><tr>' ||
+                            array_to_string(
+                                array_foreach(
+                                    @list,
+                                    '<td><p>' || trim(@element) || '.jpg</p><a href="' || @basepath || trim(@element) || '.jpg">'
+                                    || '<img src="' || @basepath || trim(@element) || '.jpg"></a></td>'
+                                ),
+                                ''
+                            ) ||
+                            '</tr></table>'
+                        )
+                END
+            )
+        )
+        '''
+
+        # Se refere à camada pelo nome
+        # layer = QgsProject.instance().mapLayersByName(layer_name)[0]
+        # Se referire à camada pelo objeto
+        layer = meu_layer
+
+        # grava como HTML Map Tip, avaliando a expressão entre [% ... %]
+        html_template = "[% " + expr + " %]"
+
+        layer.setMapTipTemplate(html_template)
+        layer.triggerRepaint()
+
+        self.add_log(f"HTML Map Tip configured for the layer:", layer.name())
 
     def setLabeling(self, layer):
         # Adicionando o rótulo da camada

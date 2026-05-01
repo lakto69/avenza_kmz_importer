@@ -624,7 +624,7 @@ class Zip_Kmz:
 
      
 
-    def setup_map_tip(self, meu_layer, basepath, field_name="photos", width=80):
+    def setup_map_tip(self, meu_layer, basepath, field_name="images", width=80):
         # "Photo Name" é o nome do campo que contém os nomes das fotos sem extensão, separados por ";"
         # 'basepath' é o caminho onde estão as imagens.
         # O Map Tip exibe as imagens em miniatura, e cada miniatura é um link para a imagem original.
