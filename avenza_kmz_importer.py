@@ -470,6 +470,9 @@ class AvenzaKMZImporter:
         # Se o campo "Photo Name" estiver vazio ou nulo, o Map Tip exibirá "No related image".
         # O estilo CSS é aplicado para melhorar a aparência das miniaturas e da tabela.
 
+        # Corrige automaticamente o caminho
+        basepath = basepath.replace("\\", "/").rstrip("/")
+        
         # Expressão QGIS que gera o HTML
         expr = f'''
         with_variable(

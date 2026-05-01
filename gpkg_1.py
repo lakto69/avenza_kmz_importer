@@ -419,7 +419,6 @@ class Zip_Kmz:
         self.simbologia = None
         self.point_cols = ['Name', 'geometry', 'Time', 'Style', 'Notes', 'Icon_URL', 'Icon_local']
         self.schema = {}
-<<<<<<< HEAD
         if self.arquivo_kmz.split('.')[-1].lower() == 'kmz':
             self.img_dir = self.save_imgs_to_path()
         self.folders = self.process_folders()
@@ -716,7 +715,6 @@ kmz_01.process_schema()
 # Listando todas as camadas do kml:
 # print(f'\n\t{[x.find("kml:name", kmz_01.ns).text for x in kmz_01.root.findall(".//kml:Folder", kmz_01.ns)]=}')
 
-<<<<<<< HEAD
 
 # kmz_01.setup_map_tip(
 #     meu_layer=result[0].get('data').get('Point'), 
