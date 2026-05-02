@@ -35,6 +35,8 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point, Polygon, LineString
 import os.path
+import os
+import shutil
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -472,7 +474,7 @@ class AvenzaKMZImporter:
 
         # Corrige automaticamente o caminho
         basepath = basepath.replace("\\", "/").rstrip("/")
-        
+
         # Expressão QGIS que gera o HTML
         expr = f'''
         with_variable(
@@ -575,11 +577,12 @@ class AvenzaKMZImporter:
             
 
         except Exception as e:
-            self.add_log(f"{self.tr(u'Error extracting KML from KMZ')} => {str(e)}\n")
+            self.add_log(self.tr(u'Error extracting KML from KMZ'), str(e))
         self.cursor_arrow()
 
     def process_simbologia(self, tree):
         # Computando as Simbologias:
+        
         self.simbologia = {}
         # for estilo in estilos:
         for estilo in tree.xpath('//kml:Style', namespaces={'kml': self.t[1:-1]}):
@@ -872,18 +875,49 @@ class AvenzaKMZImporter:
         self.dlg.setCursor(Qt.CursorShape.ArrowCursor)
 
     def save_imgs_to_path(self, kmz_file):
-        # Salva as imagens do kmz em um diretório temporário
-        img_dir = os.path.splitext(self.arquivo_kml)[0].replace('/','\\') + '_images'
+        # Diretório onde as imagens serão extraídas
+        img_dir = os.path.splitext(self.arquivo_kml)[0].replace('/', '\\') + '_images'
         self.add_log(self.tr(u'Extracting images from KMZ file in the folder'), img_dir)
+
         if not os.path.exists(img_dir):
             os.makedirs(img_dir)
-        # else:
-        #     print(f"Diretório de imagens já existe: {img_dir}")
-        #     self.add_log(self.tr(u'Image directory already exists'), )
 
+        # Percorre todos os arquivos do KMZ
         for file in kmz_file.namelist():
+
+            # Apenas arquivos dentro de "images/" e com extensões válidas
             if file.startswith("images/") and file.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+
+                # --- CORREÇÃO DO ENCODING DO NOME DO ARQUIVO ---
+                # O zipfile assume CP437 → precisamos recuperar os bytes e decodificar corretamente
+                try:
+                    fixed_name = file.encode('cp437').decode('utf-8')
+                except:
+                    try:
+                        fixed_name = file.encode('cp437').decode('latin1')
+                    except:
+                        fixed_name = file  # fallback
+
+                # Extrai o arquivo com o nome original (corrompido)
                 kmz_file.extract(file, img_dir)
 
+                # Caminho do arquivo extraído
+                old_path = os.path.join(img_dir, file)
+
+                # Caminho corrigido
+                new_path = os.path.join(img_dir, fixed_name)
+
+                # Garante que subpastas existam
+                os.makedirs(os.path.dirname(new_path), exist_ok=True)
+
+                # Renomeia para o nome correto
+                try:
+                    os.rename(old_path, new_path)
+                except FileExistsError:
+                    # Se já existir, substitui
+                    os.remove(new_path)
+                    os.rename(old_path, new_path)
+
         return img_dir
+
 

@@ -1,8 +1,0 @@
-OBS.: 
-    <SchemaData><SimpleData> só vai existir se tiver foto no <Placemark>;
-    <Schema><SimpleField> vai existir, mesmo que não haja fotos. Apenas tem relação com exportar com fotos, eu acho.
-
-1- Salvar as imagens em uma determinada pasta (img_path);
-2- Criar, na camada, uma configuração de 'map tips' 
-pra mostrar as imagens associadas à feição em uma tela HTML;
-3- Habilitar o 'map tips' da camada.
