@@ -476,8 +476,9 @@ class AvenzaKMZImporter:
         basepath = basepath.replace("\\", "/").rstrip("/")
 
         # Textos traduzíveis na 'expr'
-        no_image = self.tr('No related image') # Sem imagem relacionada
-        total_images = self.tr('Total images') # Total de imagens
+        no_image = self.tr('No Related Images') # Sem Imagens Relacionadas
+        total_images = self.tr('Total Images') # Total de imagens
+        clik_to_open = self.tr('Click to open') # Clique para abrir
 
         # Expressão QGIS que gera o HTML
         expr = f'''
@@ -489,24 +490,26 @@ class AvenzaKMZImporter:
                 "{field_name}",
                 CASE
                     WHEN @raw IS NULL OR trim(@raw) = '' THEN
-                        '<b> {no_image} </b>'
+                        '<b>{no_image}</b>'
                     ELSE
                         with_variable(
                             'list',
                             string_to_array(@raw, ';'),
 
                             '<style>
-								.all {{
+                                .all {{
 									border:5px solid #ccc;
-                                }}                            
+                                }}
                                 .container {{
-                                    max-height: 300px;      /* scroll vertical */
+                                    max-height: 180px;
                                     overflow-y: auto;
                                     max-width: 420px;
                                     border:1px solid #ccc;
                                     padding:4px;
                                 }}
+
                                 .imgbox {{
+                                    position: relative;
                                     display:inline-block;
                                     border:2px solid blue;
                                     background-color:#f0f8ff;
@@ -515,22 +518,40 @@ class AvenzaKMZImporter:
                                     margin:3px;
                                     vertical-align:top;
                                 }}
+
                                 img {{
                                     width:{width}px;
                                     height:auto;
                                     image-orientation: from-image;
-                                    transition: transform 0.25s ease;   /* suavidade */
                                 }}
-                                img:hover {{
-                                    transform: scale(1.8);              /* ZOOM */
-                                    z-index: 9999;
+
+                                .hovermsg {{
+                                    display:none;
+                                    pointer-events: none;
+                                    position:absolute;
+                                    top:0;
+                                    left:0;
+                                    width:100%;
+                                    height:100%;
+                                    background:rgba(0,0,0,0.6);
+                                    color:white;
+                                    font-size:10px;
+                                    font-weight:bold;
+                                    text-align:center;
+                                    padding-top:35%;
                                 }}
+
+                                .imgbox:hover .hovermsg {{
+                                    display:block;
+                                }}
+
                                 p {{
                                     margin:0px;
                                     font-size:8px;
                                     text-align:center;
                                     color:#1239cb;
                                 }}
+
                                 .count {{
                                     font-size:10px;
                                     font-weight:bold;
@@ -538,7 +559,6 @@ class AvenzaKMZImporter:
                                     color:#333;
                                 }}
                             </style>
-
                             <div class="all">
                                 <div class="count">{total_images}: ' || array_length(@list) || '</div>
 
@@ -551,9 +571,10 @@ class AvenzaKMZImporter:
                                             'idx',
                                             array_find(@list, @element) + 1,
                                             '<div class="imgbox">
-                                                <p>' || @idx || ' - ' || @element || '.jpg</p>
-                                                <a href="' || @basepath || @element || '.jpg">
-                                                    <img src="' || @basepath || @element || '.jpg">
+                                                <div class="hovermsg">{clik_to_open}</div>
+                                                <p>' || @idx || ' - ' || (@element) || '.jpg</p>
+                                                <a href="' || @basepath || (@element) || '.jpg">
+                                                    <img src="' || @basepath || (@element) || '.jpg">
                                                 </a>
                                             </div>'
                                         )
