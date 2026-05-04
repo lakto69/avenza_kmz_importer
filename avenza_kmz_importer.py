@@ -475,6 +475,10 @@ class AvenzaKMZImporter:
         # Corrige automaticamente o caminho
         basepath = basepath.replace("\\", "/").rstrip("/")
 
+        # Textos traduzíveis na 'expr'
+        no_image = self.tr('No related image') # Sem imagem relacionada
+        total_images = self.tr('Total images') # Total de imagens
+
         # Expressão QGIS que gera o HTML
         expr = f'''
         with_variable(
@@ -485,40 +489,80 @@ class AvenzaKMZImporter:
                 "{field_name}",
                 CASE
                     WHEN @raw IS NULL OR trim(@raw) = '' THEN
-                        '<b>No related image</b>'
+                        '<b> {no_image} </b>'
                     ELSE
                         with_variable(
                             'list',
                             string_to_array(@raw, ';'),
+
                             '<style>
-                                td {{
-                                border:2px solid blue;
-                                background-color:#f0f8ff;
-                                text-align:center;
-                                padding:3px;
+								.all {{
+									border:5px solid #ccc;
+                                }}                            
+                                .container {{
+                                    max-height: 300px;      /* scroll vertical */
+                                    overflow-y: auto;
+                                    max-width: 420px;
+                                    border:1px solid #ccc;
+                                    padding:4px;
+                                }}
+                                .imgbox {{
+                                    display:inline-block;
+                                    border:2px solid blue;
+                                    background-color:#f0f8ff;
+                                    text-align:center;
+                                    padding:3px;
+                                    margin:3px;
+                                    vertical-align:top;
                                 }}
                                 img {{
-                                width:{width}px;
-                                height:auto;
-                                image-orientation: from-image;
+                                    width:{width}px;
+                                    height:auto;
+                                    image-orientation: from-image;
+                                    transition: transform 0.25s ease;   /* suavidade */
+                                }}
+                                img:hover {{
+                                    transform: scale(1.8);              /* ZOOM */
+                                    z-index: 9999;
                                 }}
                                 p {{
-                                margin:0px;
-                                font-size:8px;
-                                text-align:center;
-                                color:#1239cb;
+                                    margin:0px;
+                                    font-size:8px;
+                                    text-align:center;
+                                    color:#1239cb;
+                                }}
+                                .count {{
+                                    font-size:10px;
+                                    font-weight:bold;
+                                    margin-bottom:4px;
+                                    color:#333;
                                 }}
                             </style>
-                            <table border="0" cellspacing="1" align="center"><tr>' ||
-                            array_to_string(
-                                array_foreach(
-                                    @list,
-                                    '<td><p>' || trim(@element) || '.jpg</p><a href="' || @basepath || trim(@element) || '.jpg">'
-                                    || '<img src="' || @basepath || trim(@element) || '.jpg"></a></td>'
-                                ),
-                                ''
-                            ) ||
-                            '</tr></table>'
+
+                            <div class="all">
+                                <div class="count">{total_images}: ' || array_length(@list) || '</div>
+
+                                <div class="container">' ||
+
+                                array_to_string(
+                                    array_foreach(
+                                        @list,
+                                        with_variable(
+                                            'idx',
+                                            array_find(@list, @element) + 1,
+                                            '<div class="imgbox">
+                                                <p>' || @idx || ' - ' || @element || '.jpg</p>
+                                                <a href="' || @basepath || @element || '.jpg">
+                                                    <img src="' || @basepath || @element || '.jpg">
+                                                </a>
+                                            </div>'
+                                        )
+                                    ),
+                                    ''
+                                ) ||
+
+                                '</div>
+                            </div>'
                         )
                 END
             )
@@ -536,7 +580,7 @@ class AvenzaKMZImporter:
         layer.setMapTipTemplate(html_template)
         layer.triggerRepaint()
 
-        self.add_log(f"HTML Map Tip configured for the layer:", layer.name())
+        self.add_log(self.tr("HTML Map Tip configured for the layer"), layer.name())
 
     def setLabeling(self, layer):
         # Adicionando o rótulo da camada
