@@ -1,5 +1,6 @@
 [general]
 name = Avenza Maps's KML/KMZ File Importer
+name[pt_br] = Importador de arquivos KML/KMZ do Avenza Maps
 qgisMinimumVersion = 3.0
 qgisMaximumVersion = 4.99
 description = This plugin import features from KML e KMZ files from Avenza Maps.
@@ -7,16 +8,16 @@ description[pt_br] = Este plugin importa feições de arquivos KML e KMZ criados
 version = 1.5
 author = Andrés de M. Leite
 email = leite.m.andres@gmail.com
-about = <style>p.warn {text-align: center;color: red}</style><p>When we import KML/KMZ files into QGIS, the symbology of the features they carry is not preserved.</p><p>Icons, colors, thicknesses, opacities, etc., which may have been used, during the creation of each feature, to visually communicate some important characteristic of it, end up unused because the symbology is not preserved.</p><p>With this plugin, all features are grouped within the layers created in Avenza and, within each layer, separate groups are created by geometry type (Point, Line and Polygon) and, within the geometry, they are categorized by their style characteristics symbology, visually facilitating geographic analysis.</p><p>Point features are imported using the same icons available in the <a href="https://store.avenza.com/">Avenza Maps App</a>.</p><p>The Tracks's features that were created in Avenza will be added to QGIS in two geometry groups: <b>Line</b> and <b>Point</b>. The points layer contains all the data for each point on that track in its attribute table: <i>speed, when, angles, horizontal_accuracy,</i> etc. And it uses a "Target" as an icon.</p><p class="warn"><b>WARNING:</b> This plugin was specifically developed to import KML and KMZ files <mark>exported by Avenza</mark>. <ins>It probably won't work with other KML/KMZ files created by other applications!</ins></p>
-about[pt_br] = <style>p.warn {text-align: center;color: red}</style><p>Quando importamos arquivos KML/KMZ para o QGIS, a simbologia das feições que eles carregam não é preservada.</p><p>Ícones, cores, espessuras, opacidades, etc., que podem ter sido utilizados, durante a criação de cada uma dessas feições, para comunicar visualmente alguma característica importante dele, acabam não sendo utilizados porque a simbologia não é preservada.</p><p>Com este plugin, todos as feições são agrupadas dentro das camadas criadas no Avenza e, dentro de cada camada, em grupos separados por tipo de geometria (Ponto, Linha e Polígono) e, dentro de cada grupo de geometria, são categorizadas pela simbologia de suas características de estilo, facilitando visualmente a análise geográfica.</p><p>As feições de ponto são importadas utilizando, como simbologia, os mesmos ícones disponíveis no <a href="https://store.avenza.com/">App Avenza Maps</a>.</p><p>As feições do tipo trilhas que foram criadas no Avenza serão adicionadas ao QGIS em dois grupos de geometria: <b>Linha</b> e <b>Ponto</b>. A camada de pontos contém todos os dados de cada ponto daquela trilha em sua tabela de atributos: <i>speed, when, angles, horizontal_accuracy,</i> etc. E usa um "Alvo" como ícone.</p><p class="warn"><b>AVISO:</b> Este plugin foi desenvolvido especificamente para importar arquivos KML e KMZ <mark>exportados pelo Avenza</mark>. <ins>Provavelmente não funcionará com outros arquivos KML/KMZ criados por outros aplicativos!</p>
+about = <style>p.warn {text-align: center;color: red}</style><p>When importing KML/KMZ files into QGIS, the symbology of the features they contain is not preserved.</p><p>Icons, colors, thicknesses, opacities, etc., that may have been used during the creation of each of these features to visually communicate some important characteristic of it, end up not being used because the symbology is not preserved.</p><p>With this plugin, all features are grouped within the layers created in Avenza and, within each layer, into groups separated by geometry type (Point, Line, and Polygon) and, within each geometry group, they are categorized by the symbology of their style characteristics, visually facilitating geographic analysis.</p><p>Point features are imported using the same icons available in the <a href="https://store.avenza.com/">Avenza App</a> Maps</a>.</p><p>The trail-type features created in Avenza will be added to QGIS in two geometry groups: <b>Line</b> and <b>Point</b>. The point layer contains all the data for each point of that trail in its attribute table: <i>speed, when, angles, horizontal_accuracy,</i> etc. And it uses a "Target" as an icon.</p><p>Now the user will be able to view the images associated with the features.</p><p class="warn"><b>WARNING:</b> This plugin was developed specifically to import KML and KMZ files <mark>exported by Avenza</mark>. <ins>It probably won't work with other KML/KMZ files created by other applications!</p>
+about[pt_br] = <style>p.warn {text-align: center;color: red}</style><p>Quando importamos arquivos KML/KMZ para o QGIS, a simbologia das feições que eles carregam não é preservada.</p><p>Ícones, cores, espessuras, opacidades, etc., que podem ter sido utilizados, durante a criação de cada uma dessas feições, para comunicar visualmente alguma característica importante dele, acabam não sendo utilizados porque a simbologia não é preservada.</p><p>Com este plugin, todos as feições são agrupadas dentro das camadas criadas no Avenza e, dentro de cada camada, em grupos separados por tipo de geometria (Ponto, Linha e Polígono) e, dentro de cada grupo de geometria, são categorizadas pela simbologia de suas características de estilo, facilitando visualmente a análise geográfica.</p><p>As feições de ponto são importadas utilizando, como simbologia, os mesmos ícones disponíveis no <a href="https://store.avenza.com/">App Avenza Maps</a>.</p><p>As feições do tipo trilhas que foram criadas no Avenza serão adicionadas ao QGIS em dois grupos de geometria: <b>Linha</b> e <b>Ponto</b>. A camada de pontos contém todos os dados de cada ponto daquela trilha em sua tabela de atributos: <i>speed, when, angles, horizontal_accuracy,</i> etc. E usa um "Alvo" como ícone.</p><p>Agora o usuário poderá visualizar as imagens associadas às feições.</p><p class="warn"><b>AVISO:</b> Este plugin foi desenvolvido especificamente para importar arquivos KML e KMZ <mark>exportados pelo Avenza</mark>. <ins>Provavelmente não funcionará com outros arquivos KML/KMZ criados por outros aplicativos!</p>
 tracker = https://github.com/lakto69/avenza_kmz_importer/issues
 repository = https://github.com/lakto69/avenza_kmz_importer
 hasProcessingProvider = no
 changelog = 
-	Version 1.5 (2026/XX/XX)
+	Version 1.5 (2026/05/07)
 	- Save the KMZ file images to a folder on your hard drive;
-	- Some methods have been refactored.;
-	- Automatic configuration of Display Properties to show the images associated with the feature when the mouse hovers over it; allowing the image(s) to be opened with a click.
+	- Some methods have been refactored;
+	- Automatic configuration of Display Properties to show the images associated with the feature when the mouse hovers over it; allowing the image(s) to be opened with a click (Qgis 3.x only; Qgis 4.x just show it).
 	Version 1.4 (2026/04/09)
 	- Qt6 compatibility added;
 	- Portuguese translation of the 'description' and 'about' fields, according to the language defined in the Qgis system;
@@ -31,6 +32,8 @@ changelog =
 	- Add choice of automatic labeling of layer features;
 	- Bug fixes;
 tags = python, import, kmz, kml, point, polygon, line, avenza
+tags[es] = pitón, importar, kmz, kml, punto, polígono, línea, avenza
+tags[pt] = python, importação, kmz, kml, ponto, polígono, linha, avenza
 homepage = https://github.com/lakto69/avenza_kmz_importer
 icon = icon.ico
 experimental = False
@@ -38,16 +41,3 @@ experimental = False
 deprecated = False
 category = Vector
 server = False
-about[en] = <style>p.warn {text-align: center;color: red}</style><p>When we import KML/KMZ files into QGIS, the symbology of the features they carry is not preserved.</p><p>Icons, colors, thicknesses, opacities, etc., which may have been used, during the creation of each feature, to visually communicate some important characteristic of it, end up unused because the symbology is not preserved.</p><p>With this plugin, all features are grouped within the layers created in Avenza and, within each layer, separate groups are created by geometry type (Point, Line and Polygon) and, within the geometry, they are categorized by their style characteristics symbology, visually facilitating geographic analysis.</p><p>Point features are imported using the same icons available in the <a href="https://store.avenza.com/">Avenza Maps App</a>.</p><p>The Tracks's features that were created in Avenza will be added to QGIS in two geometry groups: <b>Line</b> and <b>Point</b>. The points layer contains all the data for each point on that track in its attribute table: <i>speed, when, angles, horizontal_accuracy,</i> etc. And it uses a "Target" as an icon.</p><p class="warn"><b>WARNING:</b> This plugin was specifically developed to import KML and KMZ files <mark>exported by Avenza</mark>. <ins>It probably won't work with other KML/KMZ files created by other applications!</ins></p>
-name[en] = Avenza Maps's KML/KMZ File Importer
-tags[en] = python, import, kmz, kml, point, polygon, line, avenza
-description[en] = This plugin import features from KML e KMZ files from Avenza Maps.
-about[es] = <style>p.warn {text-align: center;color: red}</style><p>Cuando importamos archivos KML/KMZ a QGIS, la simbología de las características que contienen no se conserva.</p><p>Los iconos, colores, espesores, opacidades, etc., que pueden haberse utilizado, durante la creación de cada característica, para comunicar visualmente alguna característica importante de la misma, terminan sin usarse porque la simbología no se conserva.</p><p>Con este complemento, todas las características se conservan.
-name[es] = Importador de archivos KML/KMZ de Avenza Maps
-tags[es] = pitón, importar, kmz, kml, punto, polígono, línea, avenza
-description[es] = Este complemento importa funciones de archivos KML y KMZ de Avenza Maps.
-about[pt] = <style>p.warn {text-align: center;color: red}</style><p>Quando importamos arquivos KML/KMZ para o QGIS, a simbologia das feições que eles carregam não é preservada.</p><p>Ícones, cores, espessuras, opacidades, etc., que podem ter sido utilizados, durante a criação de cada feição, para comunicar visualmente alguma característica importante dela, acabam sem uso porque a simbologia não é preservada.</p><p>Com este plugin, todas as feições são agrupadas
-name[pt] = Importador de arquivos KML/KMZ do Avenza Maps
-tags[pt] = python, importação, kmz, kml, ponto, polígono, linha, avenza
-description[pt] = Este plugin importa recursos de arquivos KML e KMZ do Avenza Maps.
-
