@@ -1,0 +1,8 @@
+SOURCES = \
+    avenza_kmz_importer.py \
+    __init__.py \
+    avenza_kmz_importer_dialog_base.ui \
+	resources.py \
+    avenza_kmz_importer_dialog.py
+
+TRANSLATIONS = i18n/avenza_kmz_importer_pt.ts
