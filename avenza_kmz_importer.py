@@ -28,7 +28,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QFileDialog # CAIXA DE DIÁLOGO
-from qgis.core import QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
+from qgis.core import Qgis, QgsProject, QgsVectorLayer, QgsSymbol, QgsSvgMarkerSymbolLayer, QgsCategorizedSymbolRenderer, QgsRendererCategory, QgsLineSymbol, QgsFillSymbol, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
 from lxml import etree
 import zipfile
 import pandas as pd
@@ -36,7 +36,6 @@ import geopandas as gpd
 from shapely.geometry import Point, Polygon, LineString
 import os.path
 import os
-import shutil
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -60,10 +59,6 @@ class AvenzaKMZImporter:
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
-        # locale_path = os.path.join(
-        #     self.plugin_dir,
-        #     'i18n',
-        #     'avenza_kmz_importer_en.qm')
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
@@ -134,6 +129,7 @@ class AvenzaKMZImporter:
 
         # Internacionalizando o app:
         self.dlg.label.setText(self.tr('KML or KMZ file:'))
+        self.dlg.textBrowser_Log.setToolTip(self.tr('Processing log.'))
         self.dlg.lineEdit_KML.setToolTip(self.tr('Use the button next to it to select the file to be added to the project.'))
         self.dlg.lineEdit_KML.setPlaceholderText(self.tr('Use the button next to it to select the file...'))
         self.dlg.tbEscolherArquivo.setToolTip(self.tr('Click here to select the file to be added to the project..'))
@@ -157,6 +153,7 @@ class AvenzaKMZImporter:
         self.settings.setValue('dialog/rotular', self.dlg.checkBoxRotularNome.isChecked())
         # Salvar o tamanho da janela
         self.settings.setValue('dialog/size', self.dlg.size())        
+
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -278,13 +275,6 @@ class AvenzaKMZImporter:
 
     def run(self):
         """Run method that performs all the real work"""
-
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        # if self.first_start == True:
-        #     self.first_start = False
-        #     self.dlg = AvenzaKMZImporterDialog()
-
         # Funções de initializeção:
         self.initialize()
 
@@ -294,8 +284,6 @@ class AvenzaKMZImporter:
         result = self.dlg.exec()
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
             self.cursor_arrow()
 
     def tbEscolherArquivo(self):
@@ -357,7 +345,7 @@ class AvenzaKMZImporter:
 
         self.process_schema(self.tree)
         # self.add_log('Schema', self.esquemas)
-        self.add_log(self.tr(u'Processing Layers'), '-' * 30)
+        self.add_log(self.tr('Processing Layers'), '-' * 30)
         self.process_folders(self.tree)
         
         if self.node_group and self.node_group.findLayers()==[]:
@@ -454,9 +442,9 @@ class AvenzaKMZImporter:
         # Adicionando as camadas em um grupo:
         grupo.addLayer(layer_add)
 
-        if df_camada['images'][df_camada['images'] != None ].count() > 0:
-            # Chama o método de map tips
-            self.setup_map_tip(meu_layer=layer_add, basepath=os.path.join(self.img_dir, 'images'))
+        # if df_camada['images'][df_camada['images'] != None ].count() > 0:
+        # Chama o método de map tips
+        self.setup_map_tip(meu_layer=layer_add, basepath=os.path.join(self.img_dir, 'images'))
 
         # Rotular feições
         if self.dlg.checkBoxRotularNome.isChecked():
@@ -464,134 +452,224 @@ class AvenzaKMZImporter:
 
         self.cursor_arrow()
 
-
     def setup_map_tip(self, meu_layer, basepath, field_name="images", width=80):
-        # "Photo Name" é o nome do campo que contém os nomes das fotos sem extensão, separados por ";"
+        # "field_name" é o nome do campo que contém os nomes das fotos sem extensão, separados por ";"
         # 'basepath' é o caminho onde estão as imagens.
-        # O Map Tip exibe as imagens em miniatura, e cada miniatura é um link para a imagem original.
-        # Se o campo "Photo Name" estiver vazio ou nulo, o Map Tip exibirá "No related image".
-        # O estilo CSS é aplicado para melhorar a aparência das miniaturas e da tabela.
+        # No Qgis v3.x: O Map Tip exibe as imagens em miniatura, e cada miniatura é um link para a imagem original.
+        # No Qgis v4.x: O Map Tip exibe as imagens em miniatura. Não tem como criar um link para a imagem original.
+        # Se o campo de "field_name" estiver vazio ou nulo, o Map Tip exibirá "No related image".
+        # O estilo CSS é aplicado para melhorar a aparência das miniaturas e do HTML.
 
         # Corrige automaticamente o caminho
         basepath = basepath.replace("\\", "/").rstrip("/")
 
+        # garante que a opção de Map Tip esteja ativada na UI do QGIS
+        self.iface.actionMapTips().setChecked(True)
+                    
         # Textos traduzíveis na 'expr'
         no_image = self.tr('No Related Images') # Sem Imagens Relacionadas
         total_images = self.tr('Total Images') # Total de imagens
         clik_to_open = self.tr('Click to open') # Clique para abrir
 
-        # Expressão QGIS que gera o HTML
-        expr = f'''
-        with_variable(
-            'basepath',
-            'file:///{basepath}/',
+        # Ajustes automáticos para QGIS 4 x QGIS 3
+        # devido a mudanças na renderização de HTML e suporte a links no Map Tip
+        if Qgis.QGIS_VERSION_INT >= 40000:
+            width = 60
+            container_height = 100
+            # Expressão QGIS que gera o HTML
+            expr = f'''
             with_variable(
-                'raw',
-                "{field_name}",
-                CASE
-                    WHEN @raw IS NULL OR trim(@raw) = '' THEN
-                        '<b>{no_image}</b>'
-                    ELSE
-                        with_variable(
-                            'list',
-                            string_to_array(@raw, ';'),
+                'basepath',
+                'file:///{basepath}/',
+                with_variable(
+                    'raw',
+                    "{field_name}",
+                    CASE
+                        WHEN @raw IS NULL OR trim(@raw) = '' THEN
+                            '<b>{no_image}</b>'
+                        ELSE
+                            with_variable(
+                                'list',
+                                string_to_array(@raw, ';'),
 
-                            '<style>
-                                .all {{
-									border:5px solid #ccc;
-                                }}
-                                .container {{
-                                    max-height: 180px;
-                                    overflow-y: auto;
-                                    max-width: 420px;
-                                    border:1px solid #ccc;
-                                    padding:4px;
-                                }}
+                                '<style>
+                                    .all {{
+                                        border:5px solid #ccc;
+                                    }}
+                                    .container {{
+                                        max-height: {container_height}px;
+                                        overflow-y: auto;
+                                        max-width: 420px;
+                                        border:1px solid #ccc;
+                                        padding:4px;
+                                    }}
+                                    .imgbox {{
+                                        position: relative;
+                                        display:inline-block;
+                                        border:2px solid blue;
+                                        background-color:#f0f8ff;
+                                        text-align:center;
+                                        padding:3px;
+                                        margin:3px;
+                                        vertical-align:top;
+                                    }}
 
-                                .imgbox {{
-                                    position: relative;
-                                    display:inline-block;
-                                    border:2px solid blue;
-                                    background-color:#f0f8ff;
-                                    text-align:center;
-                                    padding:3px;
-                                    margin:3px;
-                                    vertical-align:top;
-                                }}
+                                    p {{
+                                        margin:0px;
+                                        font-size:8px;
+                                        text-align:center;
+                                        color:#1239cb;
+                                    }}
 
-                                img {{
-                                    width:{width}px;
-                                    height:auto;
-                                    image-orientation: from-image;
-                                }}
+                                    .count {{
+                                        font-size:10px;
+                                        font-weight:bold;
+                                        margin-bottom:4px;
+                                        color:#333;
+                                    }}
+                                </style>
+                                <div class="all">
+                                    <div class="count">{total_images}: ' || array_length(@list) || '</div>
 
-                                .hovermsg {{
-                                    display:none;
-                                    pointer-events: none;
-                                    position:absolute;
-                                    top:0;
-                                    left:0;
-                                    width:100%;
-                                    height:100%;
-                                    background:rgba(0,0,0,0.6);
-                                    color:white;
-                                    font-size:10px;
-                                    font-weight:bold;
-                                    text-align:center;
-                                    padding-top:35%;
-                                }}
+                                    <div class="container">' ||
 
-                                .imgbox:hover .hovermsg {{
-                                    display:block;
-                                }}
+                                    array_to_string(
+                                        array_foreach(
+                                            @list,
+                                            with_variable(
+                                                'idx',
+                                                array_find(@list, @element) + 1,
+                                                '<div class="imgbox">
+                                                    <p>' || @idx || ' - ' || (@element) || '.jpg</p>
 
-                                p {{
-                                    margin:0px;
-                                    font-size:8px;
-                                    text-align:center;
-                                    color:#1239cb;
-                                }}
+                                                    <img src="' || @basepath || (@element) || '.jpg"
+                                                        width="{width}"
+                                                        style="width:{width}px; height:auto;">
+                                                </div>'
+                                            )
+                                        ),
+                                        ''
+                                    ) ||
 
-                                .count {{
-                                    font-size:10px;
-                                    font-weight:bold;
-                                    margin-bottom:4px;
-                                    color:#333;
-                                }}
-                            </style>
-                            <div class="all">
-                                <div class="count">{total_images}: ' || array_length(@list) || '</div>
-
-                                <div class="container">' ||
-
-                                array_to_string(
-                                    array_foreach(
-                                        @list,
-                                        with_variable(
-                                            'idx',
-                                            array_find(@list, @element) + 1,
-                                            '<div class="imgbox">
-                                                <div class="hovermsg">{clik_to_open}</div>
-                                                <p>' || @idx || ' - ' || (@element) || '.jpg</p>
-                                                <a href="' || @basepath || (@element) || '.jpg">
-                                                    <img src="' || @basepath || (@element) || '.jpg">
-                                                </a>
-                                            </div>'
-                                        )
-                                    ),
-                                    ''
-                                ) ||
-
-                                '</div>
-                            </div>'
-                        )
-                END
+                                    '</div>
+                                </div>'
+                            )
+                    END
+                )
             )
-        )
-        '''
+            '''
+        else:
+            width = 80
+            container_height = 120
+            # Expressão QGIS que gera o HTML
+            expr = f'''
+            with_variable(
+                'basepath',
+                'file:///{basepath}/',
+                with_variable(
+                    'raw',
+                    "{field_name}",
+                    CASE
+                        WHEN @raw IS NULL OR trim(@raw) = '' THEN
+                            '<b>{no_image}</b>'
+                        ELSE
+                            with_variable(
+                                'list',
+                                string_to_array(@raw, ';'),
 
-        # Se refere à camada pelo nome
-        # layer = QgsProject.instance().mapLayersByName(layer_name)[0]
+                                '<style>
+                                    .all {{
+                                        border:5px solid #ccc;
+                                    }}
+                                    .container {{
+                                        max-height: {container_height}px;
+                                        overflow-y: auto;
+                                        max-width: 420px;
+                                        border:1px solid #ccc;
+                                        padding:4px;
+                                    }}
+                                    .imgbox {{
+                                        position: relative;
+                                        display:inline-block;
+                                        border:2px solid blue;
+                                        background-color:#f0f8ff;
+                                        text-align:center;
+                                        padding:3px;
+                                        margin:3px;
+                                        vertical-align:top;
+                                    }}
+
+                                    .hovermsg {{
+                                        display:none;
+                                        pointer-events: none;
+                                        position:absolute;
+                                        top:0;
+                                        left:0;
+                                        width:100%;
+                                        height:100%;
+                                        background:rgba(0,0,0,0.6);
+                                        color:white;
+                                        font-size:10px;
+                                        font-weight:bold;
+                                        text-align:center;
+                                        padding-top:35%;
+                                    }}
+
+                                    .imgbox:hover .hovermsg {{
+                                        display:block;
+                                    }}
+
+                                    p {{
+                                        margin:0px;
+                                        font-size:8px;
+                                        text-align:center;
+                                        color:#1239cb;
+                                    }}
+
+                                    .count {{
+                                        font-size:10px;
+                                        font-weight:bold;
+                                        margin-bottom:4px;
+                                        color:#333;
+                                    }}
+                                </style>
+                                <div class="all">
+                                    <div class="count">{total_images}: ' || array_length(@list) || '</div>
+
+                                    <div class="container">' ||
+
+                                    array_to_string(
+                                        array_foreach(
+                                            @list,
+                                            with_variable(
+                                                'idx',
+                                                array_find(@list, @element) + 1,
+                                                '<div class="imgbox">
+                                                    <div class="hovermsg">{clik_to_open}</div>
+                                                    <p>' || @idx || ' - ' || (@element) || '.jpg</p>
+                                                    <a href="' || @basepath || (@element) || '.jpg"
+                                                        target="_blank"
+                                                        rel="noopener"
+                                                        style="cursor:pointer;">
+
+                                                        <img src="' || @basepath || (@element) || '.jpg"
+                                                            width="{width}"
+                                                            style="width:{width}px; height:auto;">
+                                                    </a>
+                                                </div>'
+                                            )
+                                        ),
+                                        ''
+                                    ) ||
+
+                                    '</div>
+                                </div>'
+                            )
+                    END
+                )
+            )
+            '''
+
         # Se referire à camada pelo objeto
         layer = meu_layer
 
@@ -601,7 +679,7 @@ class AvenzaKMZImporter:
         layer.setMapTipTemplate(html_template)
         layer.triggerRepaint()
 
-        self.add_log(self.tr("HTML Map Tip configured for the layer"), layer.name())
+        self.add_log(self.tr("HTML of the 'Map Tip' configured for the layer"), layer.name())
 
     def setLabeling(self, layer):
         # Adicionando o rótulo da camada
@@ -677,7 +755,6 @@ class AvenzaKMZImporter:
         if tree is None:
             tree = self.tree
         # Computando os esquemas de Tracks:
-        # for esquema in esquemas:
         for esquema in tree.xpath('//kml:Schema', namespaces={'kml': self.t[1:-1]}):
             esquema_dic = {}
             for campos in esquema.findall(f'.//{self.tx}SimpleArrayField'):
@@ -704,9 +781,9 @@ class AvenzaKMZImporter:
             # Adicionando um grupo para a Camada atual
             camada_atual = self.node_group.addGroup(camada_nome)
 
-            self.add_log(self.tr(u'Processing Layer'), camada_nome)
+            self.add_log(self.tr('Processing Layer'), camada_nome)
             points, lines, polygons = self.process_placemarks(camada_nome, camada)
-            self.add_log(self.tr(u'Features found'), f'{self.tr(u"Points")}:{len(points)}, {self.tr(u"Lines")}:{len(lines)}, {self.tr(u"Polygons")}:{len(polygons)}')
+            self.add_log(self.tr('Features found'), f'{self.tr(u"Points")}:{len(points)}, {self.tr(u"Lines")}:{len(lines)}, {self.tr(u"Polygons")}:{len(polygons)}')
 
             if not (points==[] and lines==[] and polygons==[]):
                 # Cria DataFrames pandas para cada tipo de feição da camada atual
@@ -931,7 +1008,6 @@ class AvenzaKMZImporter:
         self.dlg.lineEdit_KML.clear()
         self.dlg.textBrowser_Log.clear()
         self.dlg.lineEdit_Grupo.clear()
-        # self.dlg.pushBtImportar.
     
     def cursor_wait(self):
         self.dlg.setCursor(Qt.CursorShape.WaitCursor)
@@ -942,7 +1018,7 @@ class AvenzaKMZImporter:
     def save_imgs_to_path(self, kmz_file):
         # Diretório onde as imagens serão extraídas
         img_dir = os.path.splitext(self.arquivo_kml)[0].replace('/', '\\') + '_images'
-        self.add_log(self.tr(u'Extracting images from KMZ file in the folder'), img_dir)
+        self.add_log(self.tr('Extracting images from KMZ file in the folder'), img_dir)
 
         if not os.path.exists(img_dir):
             os.makedirs(img_dir)
@@ -984,5 +1060,3 @@ class AvenzaKMZImporter:
                     os.rename(old_path, new_path)
 
         return img_dir
-
-

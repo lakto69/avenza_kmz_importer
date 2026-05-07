@@ -174,9 +174,6 @@
                                 <property name="toolTip">
                                     <string>Log do processamento.</string>
                                 </property>
-                                <property name="whatsThis">
-                                    <string>Log do processamento.</string>
-                                </property>
                                 <property name="documentTitle">
                                     <string>Log:</string>
                                 </property>
